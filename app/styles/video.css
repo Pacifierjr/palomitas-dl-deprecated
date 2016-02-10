@@ -1,0 +1,23 @@
+*{
+    font-family: sans-serif;
+}
+h1{
+    text-align: center;
+}
+#loading{
+    font-size: 1em;
+}
+#error{
+    font-size: 1em;
+    color: darkred;
+}
+@media(min-width: 768px){
+    .container{
+        width: 50%;
+        left: 25%;
+        position: relative;
+    }
+}
+video{
+    width: 100%;
+}

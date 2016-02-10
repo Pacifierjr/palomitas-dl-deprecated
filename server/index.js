@@ -4,15 +4,19 @@ var rangeParser = require('range-parser'),
   pump = require('pump'),
   _ = require('lodash'),
   express = require('express'),
+  bodyParser = require('body-parser'),
+  multer = require('multer'),
   multipart = require('connect-multiparty'),
   fs = require('fs'),
   store = require('./store'),
   progress = require('./progressbar'),
   stats = require('./stats'),
-  api = express();
+  api = express(),
+  logger = require('morgan');
 
-api.use(express.json());
-api.use(express.logger('dev'));
+api.use(bodyParser.urlencoded({extended: true}));
+api.use(bodyParser.json());
+api.use(logger('dev'));
 api.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'OPTIONS, POST, GET, PUT, DELETE');
@@ -63,7 +67,15 @@ api.get('/torrents', function (req, res) {
   res.send(store.list().map(serialize));
 });
 
+api.post('/testpost', function(req, res){
+  console.log('received post: ');
+  console.log(req.body);
+  res.send('You just sent '+JSON.stringify(req.body));
+});
+
 api.post('/torrents', function (req, res) {
+  console.log('received post: ');
+  console.log(req.body);
   store.add(req.body.link, function (err, infoHash) {
     if (err) {
       console.error(err);
@@ -146,6 +158,17 @@ api.get('/torrents/:infoHash/files', findTorrent, function (req, res) {
     }).join('\n'));
 });
 
+api.get('/torrents/:infoHash/files2', findTorrent, function (req, res) {
+  var torrent = req.torrent;
+  res.json(torrent.files.map(function (f) {
+    return req.protocol + '://' + req.get('host')+
+    '/torrents/' + torrent.infoHash+
+    '/files/'    + encodeURIComponent(f.path);
+  }));
+});
+
+
+
 api.all('/torrents/:infoHash/files/:path([^"]+)', findTorrent, function (req, res) {
   var torrent = req.torrent, file = _.find(torrent.files, { path: req.params.path });
 
@@ -180,5 +203,6 @@ api.all('/torrents/:infoHash/files/:path([^"]+)', findTorrent, function (req, re
   }
   pump(file.createReadStream(range), res);
 });
+
 
 module.exports = api;
