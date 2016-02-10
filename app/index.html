@@ -14,22 +14,26 @@
         <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
     <![endif]-->
 </head>
-<body class="container">
-    <h1>Trying video player plugin in JS</h1>
-    <p>
-        Search torrents <a target="_blank" href="http://s.fuken.xyz:3000">here</a> and paste the link in the box below
-    </p>
-    <p>
-        For checking the status of torrents, go <a href="/status.html">here</a>.
-    </p>
-    <input title="magnet_input" type="text" placeholder="magnet: ">
-    <button onclick="playtorrent()">Play this magnet link</button>
-    <br>
-    <div id="loading" hidden><h3>Loading...</h3></div>
-    <div id="error"   hidden><h3>Error!</h3></div>
-    <video src="" data-mejsoptions="{'alwaysShowControls': true}">
-        <!--<track kind="subtitles" src="b99-3x01.srt" srclang="en" />-->
-    </video>
+<body>
+    <header>
+        <h1 class="center">Palomitas: <small>ver</small></h1>
+    </header>
+    <div class="container center">
+        <p>
+            Busca torrents <a target="_blank" href="http://s.fuken.xyz:3000">aquí</a> y copia el enlace en la caja de abajo.
+        </p>
+        <p>
+            Para comprobar el estado de los torrents, pulsa <a href="/status.html">aquí</a>.
+        </p>
+        <input title="magnet_input" type="text" placeholder="magnet: ">
+        <button onclick="playtorrent()">Ver el video</button>
+        <br>
+        <div id="loading" hidden><h3>Cargando...</h3></div>
+        <div id="error"   hidden><h3>Error!</h3></div>
+        <video src="" data-mejsoptions="{'alwaysShowControls': true}">
+            <!--<track kind="subtitles" src="b99-3x01.srt" srclang="en" />-->
+        </video>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="scripts/video.js"></script>
 </body>

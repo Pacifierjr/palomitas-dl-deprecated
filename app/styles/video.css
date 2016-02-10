@@ -1,7 +1,18 @@
 *{
     font-family: sans-serif;
 }
-h1{
+body{
+    margin: 0;
+}
+header{
+    background-color: deepskyblue;
+    color: white;
+}
+header h1{
+    margin: 0;
+    padding: 0.5em 0;
+}
+.center{
     text-align: center;
 }
 #loading{
