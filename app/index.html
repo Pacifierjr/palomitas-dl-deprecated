@@ -20,13 +20,18 @@
     <header>
         <h1 class="center">Palomitas: <small>ver</small></h1>
     </header>
+<<<<<<< HEAD
     <div class="col-md-6 col-md-offset-3 center">
+=======
+    <div class="container center">
+>>>>>>> 9e08516507a1831704451ba01cf09759dc9bf210
         <p>
             Busca torrents <a target="_blank" href="http://s.fuken.xyz:3000">aquí</a> y copia el enlace en la caja de abajo.
         </p>
         <p>
             Para comprobar el estado de los torrents, pulsa <a href="/status.html">aquí</a>.
         </p>
+<<<<<<< HEAD
         <div class="input-group">
             <input class="form-control" title="magnet_input" type="text" placeholder="magnet: ">
             <span class="input-group-btn">
@@ -44,6 +49,15 @@
             <source type="video/webm">
             <source type="video/ogg">
             <source type="video/avi">
+=======
+        <input title="magnet_input" type="text" placeholder="magnet: ">
+        <button onclick="playtorrent()">Ver el video</button>
+        <br>
+        <div id="loading" hidden><h3>Cargando...</h3></div>
+        <div id="error"   hidden><h3>Error!</h3></div>
+        <video src="" data-mejsoptions="{'alwaysShowControls': true}">
+            <!--<track kind="subtitles" src="b99-3x01.srt" srclang="en" />-->
+>>>>>>> 9e08516507a1831704451ba01cf09759dc9bf210
         </video>
     </div>
     <script src="/socket.io/socket.io.js"></script>
