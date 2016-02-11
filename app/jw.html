@@ -5,8 +5,10 @@
     <title>Palomitas: ver</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript" src="me/jquery.js"></script>
+    <!--
     <script type="text/javascript" src="me/mediaelement-and-player.min.js"></script>
     <link rel="stylesheet" href="me/mediaelementplayer.css">
+    -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="styles/video.css">
     <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
@@ -38,13 +40,20 @@
         <br>
         <div id="loading" hidden><h3>Cargando...</h3></div>
         <div id="error"   hidden><h3>Error!</h3></div>
-        <video data-mejsoptions="{'alwaysShowControls': true}">
-            <!--<track kind="subtitles" src="b99-3x01.srt" srclang="en" />-->
+        <video  id="video" controls preload="metadata"
+                data-not-mejsoptions="{'alwaysShowControls': true}">
+            <!--
+            <track kind="subtitles" src="b99-3x01.srt" srclang="en" />
             <source type="video/mp4">
             <source type="video/webm">
             <source type="video/ogg">
             <source type="video/avi">
+            -->
+            <p class="vjs-no-js">
+                To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video
+            </p>
         </video>
+        <div id="footnote"></div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="scripts/video.js"></script>

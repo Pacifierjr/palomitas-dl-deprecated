@@ -9,7 +9,7 @@ $(document).ready(function(){
                     url:  '/torrents/'+hash,
                     type: "DELETE",
                     success: function(){
-                        l('Deleted torrent with hash '+pt.hash);
+                        l('Deleted torrent with hash '+hash);
                     },error: function(xhr, status, error){
                         l('Error sending delete request for hash '+hash);
                         l(status+': '+error);
@@ -30,10 +30,8 @@ $(document).ready(function(){
         if(pt.hash){
             $.get('/torrents/'+pt.hash+'/files2', function(files){
                 l('Received interested event. Files: ');
-                l(files[0]);
-                $('video')
-                    .attr('src', files[0])
-                    .mediaelementplayer();
+                l(files[0]+'?ffmpeg=true');
+                loadVideo(files[0]+'?ffmpeg=true');
                 loading.fadeOut();
             })
         }else{
@@ -41,9 +39,15 @@ $(document).ready(function(){
         }
     });
 
-    function findTorrent(){
-        return  $.get('/torrents/'+pt.hash);
+    function loadVideo(url){
+        var ext = url.substring(url.lastIndexOf(".")+1);
+        if(ext !== 'avi'){
+            $('video').attr('src', url);
+        }else{
+            alert('Sorry, avi format is not supported in the browser right now. Please search another link');
+        }
     }
+
     window.playtorrent = function playtorrent(){
         loading.fadeIn();
         var new_magnet = $('input').val();
