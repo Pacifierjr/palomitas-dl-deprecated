@@ -29,9 +29,9 @@ $(document).ready(function(){
     pt.socket.on('interested', function(){
         if(pt.hash){
             $.get('/torrents/'+pt.hash+'/files2', function(files){
-                l('Received interested event. Files: ');
-                l(files[0]+'?ffmpeg=true');
-                loadVideo(files[0]+'?ffmpeg=true');
+                var url = files[0]+'?ffmpeg=remux';
+                l('Received interested event. Files: \n'+url);
+                loadVideo(url);
                 loading.fadeOut();
             })
         }else{
