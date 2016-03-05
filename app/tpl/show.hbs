@@ -1,0 +1,60 @@
+<div class="card col-md-8 col-md-offset-2">
+  <header class="card-header">
+    <img src="{{poster}}" alt="{{name}}">
+    <h3>{{name}} {{#year}}({{.}}){{/year}}</h3>
+  </header>
+  <div>
+    <dl class="dl-horizontal">
+      <dt>Genres:</dt>
+      {{! Comma separated list }}
+      <dd><em>{{#genres}}{{.}}{{#unless @last}}, {{/unless}}{{/genres}}</em></dd>
+      <dt>Status:</dt>
+      <dd>{{status}}</dd>
+      <dt>Episode duration: </dt>
+      <dd>{{runtime}}</dd>
+      <dt>Original language:</dt>
+      <dd>{{language}}</dd>
+      {{#network}}
+      <dt>Country:</dt>
+      <dd>{{country.name}}</dd>
+      <dt>Network: </dt>
+      <dd>{{name}}</dd>
+      {{/network}}
+    </dl>
+    {{&summary}}
+    {{#unless summary}}
+    <p>No hay descripcion disponible.</p>
+    {{/unless}}
+  </div>
+  <div class="episodelist">
+    <h3>{{numSeasons}} Seasons, {{numEpisodes}} Episodes</h3>
+    {{#seasons}}
+      <div class="panel panel-default">
+        <header class="list-toggle panel-heading">
+          <p id="collapse{{@index}}"> Season {{i @index}} </p>
+        </header>
+        <ul class="list-group" hidden>
+          {{#.}}
+          <li class="list-group-item">
+            <a href="#/show/{{../../id}}/{{id}}">
+              {{season}}x{{number}} - {{name}}
+            </a>
+            <span class="pull-right">{{airdate}}</span>
+          </li>
+          {{/.}}
+        </ul>
+      </div>
+    {{/seasons}}
+  </div>
+</div>
+<script type"text/javascript">
+(function accordion(){
+  var lists = $(".episodelist .panel ul");
+  $(".episodelist .panel p").on('click', function(e){
+    var ul = $(e.target).parent().parent().find('ul');
+    var hidden = ul.attr('hidden')+"";
+    lists.hide();
+    hidden? ul.show() : ul.hide();
+  });
+})()
+</script>

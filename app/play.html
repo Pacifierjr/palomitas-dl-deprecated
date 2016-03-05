@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Palomitas: ver</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="me/jquery.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/video.css">
+    <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+         chromium.org/developers/how-tos/chrome-frame-getting-started -->
+    <!--[if lt IE 7 ]>
+        <script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+        <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+    <![endif]-->
+</head>
+<body>
+    <h1>Video integration test</h1>
+    <h2 id="loading">Loading...</h2>
+    <div id="media" hidden>
+        <a href="#" target="_blank">Abrir en una nueva ventana</a>
+        <video id="video" controls autoplay></video>
+    </div>
+    <button type="button" onclick="videoController();">videoController</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    $(function(){
+        var socket = io.connect('http://s.fuken.xyz:9000');
+        var hash   = "";
+        var player = 'http://s.fuken.xyz:9000';
+        window.videoController = function(magnet){
+            magnet = "magnet:?xt=urn:btih:F4NP44BITZA2QB5QCYRLBSL54ODE5NPE&dn=Breaking.Bad.S03E02.Caballo.Sin.Nombre.HDTV.XviD-FQM&tr=udp://tracker.openbittorrent.com:80&tr=udp://open.demonii.com:80&tr=udp://tracker.coppersurfer.tk:80&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://exodus.desync.com:6969";
+            $.get(player+'/play/'+encodeURIComponent(magnet), function(result){
+                hash = result.hash;
+                if(result.status === "wait ws"){
+                    socket.on('interested', function(result){
+                        $.get('/torrents/'+hash+'/files2', function(files){
+                            loadVideo(files[0]);
+                        });
+                    });
+                }else if(result.status === "ok"){
+                    loadVideo(result.files[0]);
+                }
+            })
+        }
+        var loadVideo = function(url){
+            socket.emit('play', hash);
+            $('#media a').attr('href', url);
+            $('#video').attr("src", url);
+            $('#loading').fadeOut();
+            $('#media').fadeIn();
+        }
+    });
+    </script>
+</body>
+</html>

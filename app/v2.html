@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Palomitas: MSE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="me/jquery.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/video.css">
+    <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+         chromium.org/developers/how-tos/chrome-frame-getting-started -->
+    <!--[if lt IE 7 ]>
+        <script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+        <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+    <![endif]-->
+</head>
+<body>
+    <header>
+        <h1 class="center">Palomitas: <small>MSE</small></h1>
+    </header>
+    <div>
+        <div id="player-log"></div>
+        <input type="text" id="player-source" placeholder="http://">
+        <button type="button" onclick="updatePlayer()">Play MSE</button>
+        <div id="player-video"></div>
+    </div>
+    <script type="text/javascript" src="scripts/mse.js"></script>
+</body>
+</html>

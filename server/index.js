@@ -12,7 +12,8 @@ var rangeParser = require('range-parser'),
   progress = require('./progressbar'),
   stats = require('./stats'),
   api = express(),
-  logger = require('morgan');
+  logger = require('morgan'),
+  ffmpeg = require('fluent-ffmpeg');
 
 api.use(bodyParser.urlencoded({extended: true}));
 api.use(bodyParser.json());
@@ -160,14 +161,66 @@ api.get('/torrents/:infoHash/files', findTorrent, function (req, res) {
 
 api.get('/torrents/:infoHash/files2', findTorrent, function (req, res) {
   var torrent = req.torrent;
-  res.json(torrent.files.map(function (f) {
-    return req.protocol + '://' + req.get('host')+
-    '/torrents/' + torrent.infoHash+
-    '/files/'    + encodeURIComponent(f.path);
-  }));
+  ffmpeg.getAvailableFormats(function(err, formats){
+    torrent.files = torrent.files.filter(function(f){
+      var ext = f.path.substring(f.path.lastIndexOf('.')+1);
+      return formats[ext] && formats[ext].canDemux;
+    });
+    res.json(torrent.files.map(function (f) {
+      return req.protocol + '://' + req.get('host')+
+      '/torrents/' + torrent.infoHash+
+      '/files/'    + encodeURIComponent(f.path);
+    }));
+  });
 });
 
+api.post('/play', function(req, res, next){
+  var magnet = decodeURIComponent(req.body.link);
+  console.log("/play received magnet: \n "+magnet);
 
+  if(!magnet){
+    console.error("Magnet link not found in post to /play");
+    return res.status(500).send();
+  }
+
+  var parsed = require('magnet-uri')(magnet);
+  if(!(parsed && parsed.infoHash)){
+    console.log("Cannot parse magnet link "+magnet);
+    return res.status(500).send();
+  }
+
+  var torrent = store.get(parsed.infoHash);
+  if ( !(torrent && torrent.files && torrent.files[0]) ) {
+    // torrent not stored previously.
+    // add torrent and tell client to wait for interested event
+    store.add(magnet, function (err, infoHash) {
+      if (err) {
+        console.error("Error in store.add");
+        console.error(err);
+        res.send(500, err);
+      } else {
+        res.json({hash: infoHash,
+                  status: "wait ws",
+                  message: "wait for interested event on websocket"});
+      }
+    });
+  }else{
+    // torrent found
+    // send file links
+    ffmpeg.getAvailableFormats(function(err, formats){
+      torrent.files = torrent.files.filter(function(f){
+        var ext = f.path.substring(f.path.lastIndexOf('.')+1);
+        return formats[ext] && formats[ext].canDemux;
+      });
+      var files = torrent.files.map(function (f) {
+        return req.protocol + '://' + req.get('host')+
+        '/torrents/' + torrent.infoHash+
+        '/files/'    + encodeURIComponent(f.path);
+      });
+      res.json({hash: parsed.infoHash, status: "ok", files: files});
+    });
+  }
+});
 
 api.all('/torrents/:infoHash/files/:path([^"]+)', findTorrent, function (req, res) {
   var torrent = req.torrent, file = _.find(torrent.files, { path: req.params.path });
@@ -203,6 +256,5 @@ api.all('/torrents/:infoHash/files/:path([^"]+)', findTorrent, function (req, re
   }
   pump(file.createReadStream(range), res);
 });
-
 
 module.exports = api;

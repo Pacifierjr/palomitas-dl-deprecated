@@ -1,51 +1,47 @@
 $(document).ready(function(){
     function l(obj){console.log(obj);}
-    $.get('/torrents', function(torrents){
-        if(torrents.length > 0){
-            l(torrents.length+' previous torrents found. Sending delete request.');
-            torrents.forEach(function(torrent){
-                var hash = torrent.infoHash;
-                $.ajax({
-                    url:  '/torrents/'+hash,
-                    type: "DELETE",
-                    success: function(){
-                        l('Deleted torrent with hash '+hash);
-                    },error: function(xhr, status, error){
-                        l('Error sending delete request for hash '+hash);
-                        l(status+': '+error);
-                    }
-                });
-            });
-        }else{
-            l('No previous torrents.');
-        }
-    })
+
+    var $video  = $('#video');
+    var $vidurl = $('#vidurl');
+    var video   = $video[0];
     var loading = $('#loading');
     var errors  = $('#error');
     var pt      = {};
+    pt.ready    = false;
     pt.socket   = io.connect('http://s.fuken.xyz:9000');
     pt.hash     = null;
     pt.magnet   = "";
-    pt.socket.on('interested', function(){
-        if(pt.hash){
+
+    pt.socket.on('interested', function (){
+        if(pt.hash && !pt.ready){
             $.get('/torrents/'+pt.hash+'/files2', function(files){
-                var url = files[0]+'?ffmpeg=remux';
+                var url = files[0];
                 l('Received interested event. Files: \n'+url);
                 loadVideo(url);
                 loading.fadeOut();
+                pt.ready = true;
+                pt.socket.emit('play', pt.hash);
             })
-        }else{
+        }else if(!pt.hash){
             l('Unable to find torrent. Received "interested" event but no hash was found.')
         }
     });
+    pt.socket.on('stats', function(hash, stats){
+        console.log("Received stats event. Stats: ");
+        console.log(stats);
+        if(!pt.ready && !pt.hash) return;
+        $("#stats").fadeIn();
+        $("#down").text(stats.speed.down);
+        $("#up").text(stats.speed.up);
+    });
 
     function loadVideo(url){
-        var ext = url.substring(url.lastIndexOf(".")+1);
-        if(ext !== 'avi'){
-            $('video').attr('src', url);
-        }else{
-            alert('Sorry, avi format is not supported in the browser right now. Please search another link');
-        }
+        $video.attr('src', url);
+        $video.attr('preload', 'auto');
+        var a = $('<a target="_blank" href='+url+'>');
+        a.text("Abrir en una nueva ventana");
+        $vidurl.append(a);
+        $video.fadeIn();
     }
 
     window.playtorrent = function playtorrent(){
@@ -59,6 +55,25 @@ $(document).ready(function(){
             infoHash = response.infoHash;
             l("Magnet sent via post. Received info hash "+infoHash);
             pt.hash = infoHash;
+            setTimeout(function(){
+                if(!pt.ready){
+                    loading.html("<h3>La carga del video esta tardando mas de lo normal. "+
+                                 "Quizas no haya suficientes seeds.</h3>");
+                }
+            }, 20000);
+            l("checking files");
+            $.get('/torrents/'+pt.hash+'/files2', function(files){
+                if(files && files[0]){
+                    var url = files[0];
+                    l('Files found: \n'+url);
+                    loadVideo(url);
+                    loading.fadeOut();
+                    pt.ready = true;
+                    pt.socket.emit('play', pt.hash);
+                }else{
+                    console.log('No files yet for '+pt.hash+'. Waiting for interested event');
+                }
+            }).fail(function(){console.log("Error listing files for "+pt.hash)})
         };
         $.ajax({
             url: '/torrents',

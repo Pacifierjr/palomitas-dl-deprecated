@@ -1,0 +1,129 @@
+/* general */
+body{
+  text-align: center;
+  margin: 0;
+  background-color: #444;
+  color: white;
+}
+hr{
+  border-color: #666;
+}
+pre{
+  white-space: pre-wrap;
+}
+
+/* header */
+.header{
+  background-color: royalblue;
+  color: white;
+}
+.header a{
+  color: white;
+}
+.header h1{
+  margin: 0;
+  padding: 0.5em 0;
+}
+.header small{
+  color:  #3DBFBC;
+}
+
+/* search and indtroduction paragraph */
+.intro{
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+/* search error message */
+.alert-danger{
+  font-size: 1.5em;
+}
+.alert-danger:before{
+  content: '✖';
+  color: #F2DEDE;
+  background-color: #A94442;
+  border-radius: 1em;
+  margin-right: 5px;
+  padding: 0 5px;
+}
+
+/* search results */
+.searchlist{
+  list-style: none;
+  text-align: left;
+}
+.searchlist li{
+  background-color: #999;
+  color: white;
+  font- weight: bold;
+  font-size: larger;
+  margin: 4px;
+}
+.searchlist li:hover{
+  outline: 2px solid #ccc;
+  outline-offset: 2px;
+}
+.searchlist li a{
+  color: white;
+}
+.searchlist li img{
+  height: 100px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* generic unit for displaying details */
+.card{
+    border: 1px solid #ddd;
+    background-color: #ddd;
+    color: #333;
+    border-radius: 5px;
+    text-align: left;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+/* more margin for episode cards */
+.card .episode{
+    margin-top: 3em !important;
+}
+
+.card-header img{
+    height: 100px;
+    vertical-align: middle;
+    margin-right: 0.5em;
+    margin-top: -3.5em;
+    margin-bottom: 1em;
+    border-radius: 6px;
+    border: 3px solid #DDD;
+}
+.card-header h3{
+    display: inline;
+    margin: 0;
+}
+@media(max-width: 768px){
+  .card-header img{
+    margin-top: 1em;
+  }
+  #results, .input-group{
+    margin: 1em;
+  }
+}
+
+.list-toggle:hover{
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* general container styles */
+#results p{
+  font-size: 1.3em;
+}
+
+/* footer */
+.footer{
+  clear: both;
+  width: 100%;
+  padding: 1em;
+  font-size: 1.2em;
+  border-top: 1px solid #666;
+}

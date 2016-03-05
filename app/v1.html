@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Palomitas: ver</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="me/jquery.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/video.css">
+    <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+         chromium.org/developers/how-tos/chrome-frame-getting-started -->
+    <!--[if lt IE 7 ]>
+        <script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+        <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+    <![endif]-->
+</head>
+<body>
+    <header style="margin-bottom: 1em;">
+        <h1 class="center">Palomitas: <small>ver</small></h1>
+    </header>
+    <div class="col-md-6 col-md-offset-3">
+        <p>
+            Busca torrents <a target="_blank" href="http://s.fuken.xyz:3000">aquí</a> y copia el enlace en la caja de abajo.
+        </p>
+        <p>
+            Para comprobar el estado de los torrents, pulsa <a href="/status.html">aquí</a>.
+        </p>
+        <p>
+            Para ver videos en formatos .avi o .mkv que no funcionan en HTML5 usa un reproductor externo como
+            <a href="https://mpv.io">MPV</a> o <a href="https://videolan.org">VLC</a>
+            para tu ordenador o <a href="https://www.reddit.com/r/PopcornTimeCE/">Popcorn Time</a> para tu movil. Este servidor solo almacena los videos temporalmente, asi que para mantener el video disponible esta pagina debe estar abierta.
+        </p>
+        <div class="input-group center">
+            <input class="form-control" title="magnet_input" type="text" placeholder="magnet:">
+            <span class="input-group-btn">
+                <button class="btn btn-primary" onclick="playtorrent()">
+                    <span class="glyphicon glyphicon-play"></span> Ver el video
+                </button>
+            </span>
+        </div>
+        <br>
+        <div id="loading" class="center" hidden><h3>Cargando...</h3></div>
+        <div id="error"   class="center" hidden><h3>Error!</h3></div>
+        <div id="stats" hidden>
+            <h3>Speed</h3>
+            <strong>Download: </strong>
+            <span id="down"></span>
+            <br>
+            <strong>Upload: </strong>
+            <span id="up"></span>
+        </div>
+        <div id="vidurl"></div>
+        <video hidden id="video" controls preload="metadata">
+            <!--
+            <track kind="subtitles" src="b99-3x01.srt" srclang="en" />
+            <source type="video/mp4">
+            <source type="video/webm">
+            <source type="video/ogg">
+            <source type="video/avi">
+            -->
+            <p>
+                To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video
+            </p>
+        </video>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="scripts/video.js"></script>
+</body>
+</html>

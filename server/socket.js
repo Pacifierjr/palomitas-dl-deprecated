@@ -1,16 +1,54 @@
 'use strict';
 
 var stats = require('./stats');
+// keep track of how many users are watching a particular torrent
 
 module.exports = function (server) {
   var io = require('socket.io').listen(server),
     _ = require('lodash'),
     progress = require('./progressbar'),
-    store = require('./store');
+    store = require('./store'),
+    clients  = {};
+
+  var cleanTorrents = function(id){
+    console.log("Client "+id+" disconnected. ");
+    var client = clients[id];
+    if(!client){
+      console.error("No client found for id "+id);
+      return;
+    }
+    clients[id].forEach(function(hash){
+      var watchers = peopleWatching(hash) - 1;
+      console.log(watchers+" people are now watching "+hash);
+      if(watchers < 1){
+        console.log("No more watchers for "+hash+". Deleting file");
+        store.remove(hash);
+      }
+    })
+    delete clients[id];
+  }
+  var play = function(hash, id){
+    console.log("Received play event");
+    clients[id] = clients[id] || [];
+    if(clients[id].indexOf(hash) === -1) clients[id].push(hash);
+    console.log(peopleWatching(hash) + " people are now watching "+hash);
+  }
+  var peopleWatching = function(hash){
+    return Object.keys(clients).filter(function(key){
+      var client = clients[key];
+      return client && client.indexOf(hash) !== -1;
+    }).length;
+  }
 
   io.set('log level', 2);
 
   io.sockets.on('connection', function (socket) {
+    console.log("Client "+socket.id+" connected to socket.io.");
+    socket.on('disconnect', function(){
+      setTimeout(function(){ cleanTorrents(socket.id); }, 5000);
+    });
+    socket.on('stop', function(){ cleanTorrents(socket.id); });
+    socket.on('play', function (hash){play(hash, socket.id);});
     socket.on('pause', function (infoHash) {
       console.log('pausing ' + infoHash);
       var torrent = store.get(infoHash);

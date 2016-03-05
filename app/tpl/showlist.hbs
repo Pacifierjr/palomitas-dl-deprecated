@@ -1,0 +1,16 @@
+<p>Se han encontrado {{results.length}} resultados.</p>
+<hr>
+<ul class="searchlist col-md-6 col-md-offset-3">
+{{#results}}
+    <li>
+        <img src="{{poster}}" alt="{{name}}">
+        <a href="#/show/{{id}}" data-id={{@index}}>
+        <em>
+            {{name}}
+            {{! weird if sentence }}
+            {{#year}}({{.}}){{/year}}
+        </em>
+        </a>
+    </li>
+{{/results}}
+</ul>

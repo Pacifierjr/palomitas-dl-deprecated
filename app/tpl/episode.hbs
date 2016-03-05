@@ -1,0 +1,72 @@
+<div class="card episode col-md-8 col-md-offset-2">
+  <header class="card-header">
+    <img src="{{poster}}" alt="{{name}}">
+    <h3>{{show.name}}: {{season}}x{{number}} - {{name}}</h3>
+  </header>
+  <div>
+    <dl class="dl-horizontal">
+      <dt>Air date:</dt>
+      <dd>{{airdate}} {{airtime}}</dd>
+      <dt>Duration:</dt>
+      <dd>{{runtime}}</dd>
+    </dl>
+    {{&summary}}
+    {{#unless summary}}
+    <p>No hay descripcion disponible.</p>
+    {{/unless}}
+  </div>
+  <div class="torrentlist">
+    <div class="panel panel-default">
+      <header class="list-toggle panel-heading"
+              onclick="$(this).parent().find('ul, .panel-body').toggle()">
+        <p>Links</p>
+      </header>
+      <div class="panel-body" hidden>
+        <p><strong>Pages:    </strong>{{pages}}</p>
+        <p><strong>Torrents: </strong>{{torrents.length}}</p>
+      </div>
+      <ul class="list-group" hidden>
+        {{#torrents}}
+          <li class="list-group-item">
+            <p>{{title}}</p>
+            <p>
+              <strong>Seeds: </strong>{{seeds}}
+              <strong>Leechs: </strong>{{leechs}}
+              <strong>Size: </strong>{{size}}
+            </p>
+            <!--
+              <pre>{{magnet}}</pre>
+            -->
+            <a href="#/video/{{encode magnet}}" class="btn btn-success">
+              <span class="glyphicon glyphicon-play"></span> Play
+            </a>
+          </li>
+        {{/torrents}}
+        {{#unless torrents}}
+          <li class="list-group-item">No links :c</li>
+        {{/unless}}
+      </ul>
+    </div>
+    <div class="panel panel-default">
+      <header class="list-toggle panel-heading"
+              onclick="$(this).parent().find('ul, .panel-body').toggle()">
+        <p>Subtitles</p>
+      </header>
+      <div class="panel-body" hidden>
+        <p><strong>Options: </strong>{{subs.length}}</p>
+      </div>
+      <ul class="list-group" hidden>
+        {{#subs}}
+        <li class="list-group-item">
+          <p>{{name}}</p>
+          <p>
+            <strong>Format: </strong>{{ext}}
+            <strong>Language: </strong>{{lang}}
+          </p>
+          <pre>{{url}}</pre>
+        </li>
+        {{/subs}}
+      </ul>
+    </div>
+  </div>
+</div>

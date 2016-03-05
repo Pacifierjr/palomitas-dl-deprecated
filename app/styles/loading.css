@@ -1,0 +1,63 @@
+/* ============================================================
+  SPINNER CONTAINER
+============================================================ */
+.spinner-container {
+  padding: 20px 0;
+}
+
+/* ============================================================
+  SPINNER - COMMON
+============================================================ */
+[class*="cmn-spinner"] {
+  position: relative;
+  margin: 0 auto;
+  width: 100px;
+  height: 100px;
+  color: rgba(0, 0, 0, 0);
+  font-size: 0;
+  text-indent: -99999px;
+}
+
+.cmn-spinner__radar {
+  border-top: solid 2px #96ff96;
+  border-right: solid 2px transparent;
+  border-bottom: solid 2px transparent;
+  border-left: solid 2px transparent;
+  border-radius: 100%;
+  animation: cmn-spinner--animation__radar 1.5s infinite linear;
+}
+.cmn-spinner__radar::before, .cmn-spinner__radar::after {
+  display: block;
+  position: absolute;
+  border-right: solid 2px transparent;
+  border-bottom: solid 2px transparent;
+  border-left: solid 2px transparent;
+  border-radius: 100%;
+  content: "";
+}
+.cmn-spinner__radar::before {
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  border-top: solid 2px #dcff64;
+  animation: cmn-spinner--animation__radar 1.75s infinite linear;
+}
+.cmn-spinner__radar::after {
+  top: 26px;
+  right: 26px;
+  bottom: 26px;
+  left: 26px;
+  border-top: solid 2px #fff;
+  animation: cmn-spinner--animation__radar 2s infinite linear;
+}
+
+/* animation keyframes */
+@keyframes cmn-spinner--animation__radar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
