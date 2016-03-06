@@ -13,7 +13,8 @@ var rangeParser = require('range-parser'),
   stats = require('./stats'),
   api = express(),
   logger = require('morgan'),
-  ffmpeg = require('fluent-ffmpeg');
+  ffmpeg = require('fluent-ffmpeg'),
+  subdown = require('./subdown');
 
 api.use(bodyParser.urlencoded({extended: true}));
 api.use(bodyParser.json());
@@ -220,6 +221,30 @@ api.post('/play', function(req, res, next){
       res.json({hash: parsed.infoHash, status: "ok", files: files});
     });
   }
+});
+
+api.get('/subs/:url', function(req, res){
+  var url = req.params.url;
+  subdown(url, function(err, subs){
+    if(err){
+      res.send(500, err.toString());
+    }else{
+      var lines = subs.toString().split('\r\n\r\n');
+      subs = lines.map(function(line){
+        var text = line.split('\r\n');
+        var id   = text.shift();
+        var time = text.shift();
+        var time = time.split(' --> ');
+        var res = {id: id, time: {start: time[0], end: time[1]}, text: text.join('\r\n')};
+        if(!(res.id & res.time.start && res.time.end && res.text )){
+          throw new SyntaxError("Malformed subtitles archive from opensubtitles.")
+        }
+        return res;
+      });
+
+      res.json(subs);
+    }
+  });
 });
 
 api.all('/torrents/:infoHash/files/:path([^"]+)', findTorrent, function (req, res) {

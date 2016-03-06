@@ -230,7 +230,7 @@ $(document).ready(function(){
         ep.torrents = ep.torrents.filter(function(torrent){
             return  torrent.seeds > 0 &&
                     torrent.magnet &&
-                    !torrent.magnet.contains("no_trackers_found");
+                    torrent.magnet.indexOf("no_trackers_found") === -1;
         })
         return ep;
     }
