@@ -15,6 +15,16 @@
     <p>No hay descripcion disponible.</p>
     {{/unless}}
   </div>
+  <fieldset class="langselect">
+    <legend>Subtitle Languages</legend>
+    <select name="lang" id="lang">
+      <option value="">Select language</option>
+      {{#langs}}
+        <option value="{{code}}">{{name}}</option>
+      {{/langs}}
+    </select>
+  </fieldset>
+  <br>
   <div class="torrentlist">
     <div class="panel panel-default">
       <header class="list-toggle panel-heading"
@@ -54,9 +64,12 @@
         <p>Subtitles</p>
       </header>
       <div class="panel-body" hidden>
-        <p><strong>Options: </strong>{{subs.length}}</p>
+        <p>
+          <span id="howmanysubs">{{subs.length}} </span>
+          <strong> Links</strong>
+        </p>
       </div>
-      <ul class="list-group" hidden>
+      <ul id="subs" class="list-group" hidden>
         {{#subs}}
         <li class="list-group-item">
           <p>{{name}}</p>

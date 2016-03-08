@@ -28,6 +28,7 @@ api.use(function (req, res, next) {
 });
 
 api.set('json spaces', 2);
+api.set('env', 'production');
 
 function serialize(torrent) {
   if (!torrent.torrent) {
@@ -230,11 +231,14 @@ api.get('/subs/langs', function(req, res){
   res.sendFile(path.join(__dirname, 'langs.json'));
 })
 
+// parsing subtitles on the server
+// because using zlib node module is easier
+// than using some front-end js zip library
 api.get('/subs/:url', function(req, res){
   var url = req.params.url;
-  if(url.indexOf('http') === -1){
+  if(url.indexOf('http://dl.opensubtitles.org') === -1){
     console.error("/subs/:url received malformed url param: \n\t"+url);
-    res.status(400).send("400 Bad Request: Malformed URL param");
+    res.status(400).send("Bad Request: Malformed URL param");
   }
   subdown(url, function(err, subs){
     if(err){

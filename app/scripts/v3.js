@@ -12,7 +12,8 @@ $(document).ready(function(){
     var container   = $('#results');
     var loading     = container.html();
     var view_cache  = [];
-    var interested = false;
+    var interested  = false;
+    var lang        = "spa";
 
     var endpoint = 'http://api.tvmaze.com';
 
@@ -55,7 +56,6 @@ $(document).ready(function(){
             show.name = show.name.replace("'", "");
             ep.show = show;
             ep.query = getQueryString(ep);
-            var lang = "spa";
             var torrenturl = 'http://s.fuken.xyz:8000/'+
                              'search?query='+ep.query+'&order=peers&limit=100';
             var subsurl    = 'http://s.fuken.xyz:4000/'+
@@ -69,7 +69,7 @@ $(document).ready(function(){
         var thirdStep = function(ep, torrents, subs, langs){
             var torrents = torrents[0],
                 subs = subs[0];
-            ep.langs = langs;
+            ep.langs = langs[0];
             ep.pages = torrents.totalPages;
             ep.filtered = torrents.filtered;
             ep.torrents = torrents.torrents;
@@ -79,7 +79,43 @@ $(document).ready(function(){
                 error('Error buscando el episodio en las APIs');
             }else{
                 var parsed = parseEpisode(ep);
-                render('episode', parsed);
+                render('episode', parsed, function cb(){
+                    $("#lang").on('change', function(e){
+                        var newlang = this.value;
+                        if(newlang !== lang){
+                            lang = newlang;
+                            var subsurl =
+                              'http://s.fuken.xyz:4000/'+
+                              'search?query='+ep.show.name+
+                              '&season='+ep.season+'&episode='+ep.number+
+                              '&lang='+lang;
+                            console.log("Change subtitles. Sending req to "+subsurl);
+                            var subs_container = $("#subs");
+                            var subs_counter   = $("#howmanysubs");
+                            subs_container.fadeOut();
+                            $.getJSON(subsurl, function(subs){
+                                console.log("Received subs from API. Replacing content");
+                                var parsed = parseSubs(subs.results);
+                                var subs_tpl = 
+                                '{{#subs}}'+
+                                '<li class="list-group-item">'+
+                                  '<p>{{name}}</p>'+
+                                  '<p>'+
+                                    '<strong>Format: </strong>{{ext}} '+
+                                    '<strong>Language: </strong>{{lang}} '+
+                                  '</p>'+
+                                  '<pre>{{url}}</pre>'+
+                                '</li>'+
+                                '{{/subs}}';
+                                var view = Handlebars.compile(subs_tpl, {strict: true});
+                                var rendered = view({subs: parsed});
+                                subs_counter.text(parsed.length);
+                                subs_container.html(rendered);
+                                subs_container.fadeIn();
+                            });
+                        }
+                    })
+                });
             }
         }
         firstStep().then(secondStep).then(thirdStep);
@@ -167,6 +203,10 @@ $(document).ready(function(){
     Handlebars.registerHelper('encode', function(val){
         return encodeURIComponent(val);
     });
+    Handlebars.registerHelper('json', function(val){
+        return JSON.stringify(val);
+    });
+
     function encode(param){
         return encodeURIComponent(param).replace(/'/g, "%27");
     }
@@ -175,20 +215,22 @@ $(document).ready(function(){
         var season = ep.season > 9? ep.season: "0"+ep.season;
         return ep.show.name + " s"+season+"e"+number;
     }
-    function render(viewName, model){
-        function parse(view){
+    function render(viewName, model, callback){
+        function parse(view, callback){
             var rendered = view(model);
             container.html(rendered);
+            if(callback) callback();
         }
-        var cached = view_cache.indexOf(viewName) !== -1;
+        //var cached = view_cache.indexOf(viewName) !== -1;
+        var cached = false;
         if(!cached) {
             $.get('/tpl/'+viewName+'.hbs', function(tpl){
                 var view = Handlebars.compile(tpl, {strict: true})
                 view_cache[viewName] = view;
-                parse(view);
+                parse(view, callback);
             });
         }else{
-            parse(view_cache[viewName]);
+            parse(view_cache[viewName], callback);
         }
     }
     function error(msg){
