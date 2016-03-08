@@ -14,7 +14,8 @@ var rangeParser = require('range-parser'),
   api = express(),
   logger = require('morgan'),
   ffmpeg = require('fluent-ffmpeg'),
-  subdown = require('./subdown');
+  subdown = require('./subdown'),
+  path = require('path');
 
 api.use(bodyParser.urlencoded({extended: true}));
 api.use(bodyParser.json());
@@ -25,6 +26,8 @@ api.use(function (req, res, next) {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
+
+api.set('json spaces', 2);
 
 function serialize(torrent) {
   if (!torrent.torrent) {
@@ -223,8 +226,16 @@ api.post('/play', function(req, res, next){
   }
 });
 
+api.get('/subs/langs', function(req, res){
+  res.sendFile(path.join(__dirname, 'langs.json'));
+})
+
 api.get('/subs/:url', function(req, res){
   var url = req.params.url;
+  if(url.indexOf('http') === -1){
+    console.error("/subs/:url received malformed url param: \n\t"+url);
+    res.status(400).send("400 Bad Request: Malformed URL param");
+  }
   subdown(url, function(err, subs){
     if(err){
       res.send(500, err.toString());
@@ -236,8 +247,8 @@ api.get('/subs/:url', function(req, res){
         var time = text.shift();
         var time = time.split(' --> ');
         var res = {id: id, time: {start: time[0], end: time[1]}, text: text.join('\r\n')};
-        if(!(res.id & res.time.start && res.time.end && res.text )){
-          throw new SyntaxError("Malformed subtitles archive from opensubtitles.")
+        if(!(res.id && res.time.start && res.time.end && res.text )){
+          throw new SyntaxError("subid: "+id+" Malformed subtitles archive from opensubtitles.")
         }
         return res;
       });

@@ -55,17 +55,21 @@ $(document).ready(function(){
             show.name = show.name.replace("'", "");
             ep.show = show;
             ep.query = getQueryString(ep);
+            var lang = "spa";
             var torrenturl = 'http://s.fuken.xyz:8000/'+
                              'search?query='+ep.query+'&order=peers&limit=100';
             var subsurl    = 'http://s.fuken.xyz:4000/'+
-                             'search?query='+show.name+'&season='+ep.season+'&episode='+ep.number;
+                             'search?query='+show.name+'&season='+ep.season+'&episode='+ep.number+
+                             '&lang='+lang;
+            var langsurl   = '/subs/langs'
             console.log("GET torrents from "+torrenturl);
             console.log("GET subs from "+subsurl);
-            return $.when(ep, $.getJSON(torrenturl), $.getJSON(subsurl));
+            return $.when(ep, $.getJSON(torrenturl), $.getJSON(subsurl), $.getJSON(langsurl));
         }
-        var thirdStep = function(ep, torrents, subs){
+        var thirdStep = function(ep, torrents, subs, langs){
             var torrents = torrents[0],
                 subs = subs[0];
+            ep.langs = langs;
             ep.pages = torrents.totalPages;
             ep.filtered = torrents.filtered;
             ep.torrents = torrents.torrents;
@@ -85,7 +89,7 @@ $(document).ready(function(){
     var peerflix = 'http://s.fuken.xyz:9000';
     var socket   = io.connect(peerflix);
     var hash     = "";
-    var videoController = function(magnet){
+    var videoController = function(epquery, magnet){
         showLoading();
         var postCB = function(result){
             hash = result.hash;
@@ -151,7 +155,7 @@ $(document).ready(function(){
         '/search/:query': searchController,
         '/show/:id': showController,
         '/show/:showid/:episodeid': episodeController,
-        '/video/:magnet': videoController
+        '/video/:epquery/:magnet': videoController
     }).configure({
         notfound: function(){
             error('Invalid route.');
