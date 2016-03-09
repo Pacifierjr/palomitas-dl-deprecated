@@ -57,7 +57,9 @@ $(document).ready(function(){
             show.name = show.name.replace("'", "");
             ep.show = show;
             ep.query = getQueryString(ep);
-            var torrenturl = 'http://s.fuken.xyz:8000/'+
+            "search?query=community s02e05&page=1&limit=50&order=peers"
+            var torrenturl = 'http://s.fuken.xyz:8000/search?query='+encode(ep.query)+
+                             '&page=1&limit=100&order=peers';
             console.log("GET torrents from "+torrenturl);
             return $.when(ep, $.getJSON(torrenturl));
         }
@@ -77,7 +79,8 @@ $(document).ready(function(){
         firstStep().then(secondStep).then(thirdStep);
     }
 
-    var peerflix = 'http://s.fuken.xyz:9000';
+    //var peerflix = 'http://s.fuken.xyz:9000';
+    var peerflix = "";
     var socket   = io.connect(peerflix);
     var hash     = "";
     var videoController = function(_epquery, magnet){
@@ -183,34 +186,39 @@ $(document).ready(function(){
                     subs_counter.html(parsed.length);
                     subs_container.html(rendered);
                     subs_container.fadeIn();
-                    bindInsertButtons();
                 });
             }
         });
+        bindInsertButtons();
+    }
+
+    var bindInsertButtons = function(){
         var btns = $(".insertsubs");
         var video = $('video')[0];
-        var bindInsertButtons = function(){
-            btns.each(function(index, el){
-                btn = $(el);
-                var url = btn.data('url');
-                btn.on('click', function(){
-                    $.getJSON('/subs/'+encode(url), function(parsedsubs){
-                        var track = video.addTextTrack('subtitles', lang+index, lang);
-                        track.mode = "showing";
-                        parsedsubs.forEach(function(cue){
-                            var start = cue.time.start.replace(",", ".");
-                            var end   = cue.time.end.replace(",", ".");
-                            start = timeToFloat(start);
-                            end   = timeToFloat(end);
-                            console.log("Adding cue between "+start+" and "+end);
-                            track.addCue(new VTTCue(start, end, cue.text));
-                        });
-                        console.log(JSON.stringify(parsedsubs));
+        console.log("Binding buttons");
+        if(!btns.length) console.log("No buttons for binding");
+        btns.each(function(index, el){
+            btn = $(el);
+            var url = btn.data('url');
+            el.onclick = function onClickInsert(e){
+                console.log("Parsing subs from "+peerflix+"/subs/"+encode(url));
+                $.getJSON('/subs/'+encode(url), function(parsedsubs){
+                    console.log("Parsed subs. Inserting into video");
+                    var track = video.addTextTrack('subtitles', lang+index, lang);
+                    track.mode = "showing";
+                    parsedsubs.forEach(function(cue){
+                        var start = cue.time.start.replace(",", ".");
+                        var end   = cue.time.end.replace(",", ".");
+                        start = timeToFloat(start);
+                        end   = timeToFloat(end);
+                        console.log("Adding cue between "+start+" and "+end);
+                        track.addCue(new VTTCue(start, end, cue.text));
                     });
+                    console.log(JSON.stringify(parsedsubs));
                 });
-            });
-        };
-    }
+            };
+        });
+    };
 
     function timeToFloat(str){
         var time  = 0;
@@ -235,8 +243,8 @@ $(document).ready(function(){
             search_btn.click();
         }
     });
-    $(document).ajaxError(function(){
-        error('Error sending request to the API.');
+    $(document).ajaxError(function(ev, xhr, ajaxSettings, err){
+        error('Error sending request to the API: '+xhr.responseText);
     });
     socket.on('interested', function(result){
         if(!interested){
