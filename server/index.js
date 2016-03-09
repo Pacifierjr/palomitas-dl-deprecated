@@ -248,7 +248,7 @@ api.get('/subs/:url', function(req, res){
       subs = lines.map(function(line){
         var text = line.split('\r\n');
         var id   = text.shift();
-        var time = text.shift();
+        var time = text.shift().replace(",", ".");
         var time = time.split(' --> ');
         var res = {id: id, time: {start: time[0], end: time[1]}, text: text.join('\r\n')};
         if(!(res.id && res.time.start && res.time.end && res.text )){

@@ -40,7 +40,13 @@
         <strong>Format: </strong>{{ext}}
         <strong>Language: </strong>{{lang}}
       </p>
-      <pre>{{url}}</pre>
+      <p>
+        <a href="{{url}}" class="btn btn-primary">Download</a>
+        <button type="button" class="insertsubs btn btn-success"
+                data-url="{{url}}">
+          Insert in video
+        </button>
+      </p>
     </li>
     {{/subs}}
   </ul>

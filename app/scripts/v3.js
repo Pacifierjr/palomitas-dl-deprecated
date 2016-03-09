@@ -123,12 +123,11 @@ $(document).ready(function(){
 
         $.when(subsReq, langsReq)
         .then(function(subs, langs){
-            console.dir(subs);
             subs  = parseSubs(subs[0].results);
             langs = langs[0];
 
             var model = {url: videourl, subs: subs, langs: langs};
-            render('video', model, bindLangChange);
+            render('video', model, bindSubsEvents);
             socket.emit('play', hash);
         });
         //loadVideo(videourl);
@@ -141,7 +140,7 @@ $(document).ready(function(){
     }*/
 
     // Binding
-    var bindLangChange = function (){
+    var bindSubsEvents = function (){
         $("#lang").on('change', function(e){
             var newlang = this.value;
             if(newlang === "" || newlang === lang){
@@ -170,7 +169,13 @@ $(document).ready(function(){
                         '<strong>Format: </strong>{{ext}} '+
                         '<strong>Language: </strong>{{lang}} '+
                       '</p>'+
-                      '<pre>{{url}}</pre>'+
+                      '<p>'+
+                        '<a href="{{url}}" class="btn btn-primary">Download</a>'+
+                        '<button type="button" class="insertsubs btn btn-success"'+
+                                'data-url="{{url}}">'+
+                          'Insert in video'+
+                        '</button>'+
+                      '</p>'+
                     '</li>'+
                     '{{/subs}}';
                     var view = Handlebars.compile(subs_tpl, {strict: true});
@@ -178,9 +183,46 @@ $(document).ready(function(){
                     subs_counter.html(parsed.length);
                     subs_container.html(rendered);
                     subs_container.fadeIn();
+                    bindInsertButtons();
                 });
             }
-        })
+        });
+        var btns = $(".insertsubs");
+        var video = $('video')[0];
+        var bindInsertButtons = function(){
+            btns.each(function(index, el){
+                btn = $(el);
+                var url = btn.data('url');
+                btn.on('click', function(){
+                    $.getJSON('/subs/'+encode(url), function(parsedsubs){
+                        var track = video.addTextTrack('subtitles', lang+index, lang);
+                        track.mode = "showing";
+                        parsedsubs.forEach(function(cue){
+                            var start = cue.time.start.replace(",", ".");
+                            var end   = cue.time.end.replace(",", ".");
+                            start = timeToFloat(start);
+                            end   = timeToFloat(end);
+                            console.log("Adding cue between "+start+" and "+end);
+                            track.addCue(new VTTCue(start, end, cue.text));
+                        });
+                        console.log(JSON.stringify(parsedsubs));
+                    });
+                });
+            });
+        };
+    }
+
+    function timeToFloat(str){
+        var time  = 0;
+        var split = str.split(":");
+        var hours = parseFloat(split[0]);
+        var minutes = parseFloat(split[1]);
+        var seconds = parseFloat(split[2]);
+        if(hours)   time += hours   * 60 * 60;
+        if(minutes) time += minutes * 60;
+        if(seconds) time += seconds;
+
+        return time;
     }
 
     search_btn.on('click', function(){
