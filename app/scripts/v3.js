@@ -118,7 +118,7 @@ $(document).ready(function(){
         var subsurl   = 'http://s.fuken.xyz:4000/'+
                           'search?query='+ep.name+'&season='+ep.season+'&episode='+ep.number
                           '&lang='+lang;
-        var langsurl  = '/subs/langs'
+        var langsurl  = '/subs/langs';
         console.log("GET subs from "+subsurl);
 
         var subsReq  = $.getJSON(subsurl);
