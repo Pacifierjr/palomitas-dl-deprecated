@@ -14,6 +14,7 @@ $(document).ready(function(){
     var view_cache  = [];
     var interested  = false;
     var lang        = "spa";
+    var epquery     = "";
 
     var endpoint = 'http://api.tvmaze.com';
 
@@ -57,75 +58,30 @@ $(document).ready(function(){
             ep.show = show;
             ep.query = getQueryString(ep);
             var torrenturl = 'http://s.fuken.xyz:8000/'+
-                             'search?query='+ep.query+'&order=peers&limit=100';
-            var subsurl    = 'http://s.fuken.xyz:4000/'+
-                             'search?query='+show.name+'&season='+ep.season+'&episode='+ep.number+
-                             '&lang='+lang;
-            var langsurl   = '/subs/langs'
             console.log("GET torrents from "+torrenturl);
-            console.log("GET subs from "+subsurl);
-            return $.when(ep, $.getJSON(torrenturl), $.getJSON(subsurl), $.getJSON(langsurl));
+            return $.when(ep, $.getJSON(torrenturl));
         }
-        var thirdStep = function(ep, torrents, subs, langs){
-            var torrents = torrents[0],
-                subs = subs[0];
-            ep.langs = langs[0];
+        var thirdStep = function(ep, torrents){
+            var torrents = torrents[0];
             ep.pages = torrents.totalPages;
             ep.filtered = torrents.filtered;
             ep.torrents = torrents.torrents;
-            ep.subs = parseSubs(subs.results);
             var hasError = ep.status === 404 || ep.show.status === 404;
             if(hasError){
                 error('Error buscando el episodio en las APIs');
             }else{
                 var parsed = parseEpisode(ep);
-                render('episode', parsed, function cb(){
-                    $("#lang").on('change', function(e){
-                        var newlang = this.value;
-                        if(newlang !== lang){
-                            lang = newlang;
-                            var subsurl =
-                              'http://s.fuken.xyz:4000/'+
-                              'search?query='+ep.show.name+
-                              '&season='+ep.season+'&episode='+ep.number+
-                              '&lang='+lang;
-                            console.log("Change subtitles. Sending req to "+subsurl);
-                            var subs_container = $("#subs");
-                            var subs_counter   = $("#howmanysubs");
-                            subs_container.fadeOut();
-                            $.getJSON(subsurl, function(subs){
-                                console.log("Received subs from API. Replacing content");
-                                var parsed = parseSubs(subs.results);
-                                var subs_tpl = 
-                                '{{#subs}}'+
-                                '<li class="list-group-item">'+
-                                  '<p>{{name}}</p>'+
-                                  '<p>'+
-                                    '<strong>Format: </strong>{{ext}} '+
-                                    '<strong>Language: </strong>{{lang}} '+
-                                  '</p>'+
-                                  '<pre>{{url}}</pre>'+
-                                '</li>'+
-                                '{{/subs}}';
-                                var view = Handlebars.compile(subs_tpl, {strict: true});
-                                var rendered = view({subs: parsed});
-                                subs_counter.text(parsed.length);
-                                subs_container.html(rendered);
-                                subs_container.fadeIn();
-                            });
-                        }
-                    })
-                });
+                render('episode', parsed);
             }
         }
         firstStep().then(secondStep).then(thirdStep);
     }
 
-    // videoController code extracted from s.fuken.xyz:9000/scripts/video.js
     var peerflix = 'http://s.fuken.xyz:9000';
     var socket   = io.connect(peerflix);
     var hash     = "";
-    var videoController = function(epquery, magnet){
+    var videoController = function(_epquery, magnet){
+        epquery = _epquery;
         showLoading();
         var postCB = function(result){
             hash = result.hash;
@@ -133,8 +89,7 @@ $(document).ready(function(){
                 interested = true;
                 console.log("Waiting for interested event");
             }else if(result.status === "ok"){
-                render('video', {url: result.files[0]});
-                loadVideo(result.files[0]);
+                onVideoReady(result.files[0], epquery);
             }
         }
         var errorCB = function(xhr, status, err){
@@ -155,13 +110,79 @@ $(document).ready(function(){
             }
         });
     }
+    var onVideoReady = function(videourl, _epquery){
+        var ep = decodeEpQuery(_epquery);
+        var subsurl   = 'http://s.fuken.xyz:4000/'+
+                          'search?query='+ep.name+'&season='+ep.season+'&episode='+ep.number
+                          '&lang='+lang;
+        var langsurl  = '/subs/langs'
+        console.log("GET subs from "+subsurl);
+
+        var subsReq  = $.getJSON(subsurl);
+        var langsReq = $.getJSON(langsurl);
+
+        $.when(subsReq, langsReq)
+        .then(function(subs, langs){
+            console.dir(subs);
+            subs  = parseSubs(subs[0].results);
+            langs = langs[0];
+
+            var model = {url: videourl, subs: subs, langs: langs};
+            render('video', model, bindLangChange);
+            socket.emit('play', hash);
+        });
+        //loadVideo(videourl);
+    }
+    /*
     var loadVideo = function(url){
         socket.emit('play', hash);
         $('#media a').attr('href', url);
         $('#video').attr("src", url);
-    }
+    }*/
 
     // Binding
+    var bindLangChange = function (){
+        $("#lang").on('change', function(e){
+            var newlang = this.value;
+            if(newlang === "" || newlang === lang){
+                return;
+            }
+            else{
+                lang = newlang;
+                var ep = decodeEpQuery(epquery);
+                var subsurl =
+                  'http://s.fuken.xyz:4000/'+
+                  'search?query='+ep.name+
+                  '&season='+ep.season+'&episode='+ep.number+
+                  '&lang='+lang;
+                console.log("Change subtitles. Sending req to "+subsurl);
+                var subs_container = $("#subs");
+                var subs_counter   = $("#howmanysubs");
+                subs_container.fadeOut();
+                $.getJSON(subsurl, function(subs){
+                    console.log("Received subs from API. Replacing content");
+                    var parsed = parseSubs(subs.results);
+                    var subs_tpl =
+                    '{{#subs}}'+
+                    '<li class="list-group-item">'+
+                      '<p>{{name}}</p>'+
+                      '<p>'+
+                        '<strong>Format: </strong>{{ext}} '+
+                        '<strong>Language: </strong>{{lang}} '+
+                      '</p>'+
+                      '<pre>{{url}}</pre>'+
+                    '</li>'+
+                    '{{/subs}}';
+                    var view = Handlebars.compile(subs_tpl, {strict: true});
+                    var rendered = view({subs: parsed});
+                    subs_counter.html(parsed.length);
+                    subs_container.html(rendered);
+                    subs_container.fadeIn();
+                });
+            }
+        })
+    }
+
     search_btn.on('click', function(){
         var query = encode(input.val());
         location.hash='#/search/'+query;
@@ -180,8 +201,7 @@ $(document).ready(function(){
             return;
         }
         $.getJSON(peerflix+'/torrents/'+hash+'/files2', function(files){
-            render('video', {url: files[0]});
-            loadVideo(files[0]);
+            onVideoReady(files[0], epquery);
             interested = false;
         });
     });
@@ -200,9 +220,7 @@ $(document).ready(function(){
 
     // Helpers
     Handlebars.registerHelper('i', function(val){return ++val;});
-    Handlebars.registerHelper('encode', function(val){
-        return encodeURIComponent(val);
-    });
+    Handlebars.registerHelper('encode', encode);
     Handlebars.registerHelper('json', function(val){
         return JSON.stringify(val);
     });
@@ -214,6 +232,25 @@ $(document).ready(function(){
         var number = ep.number > 9? ep.number: "0"+ep.number;
         var season = ep.season > 9? ep.season: "0"+ep.season;
         return ep.show.name + " s"+season+"e"+number;
+    }
+    function decodeEpQuery(_epquery){
+        epquery = _epquery;
+        epquery = decodeURIComponent(epquery);
+        var querysplit = epquery.split(" ");
+        // there must be at least 2 string chunks separated by a space
+        if(querysplit.length < 2){
+            error('Malformed epquery param');
+            throw new SyntaxError('Malformed epquery param');
+        }
+        var lastIndex = querysplit.length - 1
+        var numbers   = querysplit[lastIndex];
+        var name      = epquery.replace(numbers, "").trim();
+
+        numbers = numbers.replace("s", "");
+        numbers = numbers.split("e");
+        var season  = parseInt(numbers[0]);
+        var episode = parseInt(numbers[1]);
+        return {name: name, season: season, number: episode};
     }
     function render(viewName, model, callback){
         function parse(view, callback){

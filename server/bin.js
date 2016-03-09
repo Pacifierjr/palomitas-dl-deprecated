@@ -10,6 +10,7 @@ var express = require('express'),
   api = require('./')
     .use(express.static(path.join(__dirname, '../dist'), STATIC_OPTIONS))
     .use(express.static(path.join(__dirname, '../.tmp'), STATIC_OPTIONS))
+    .use(express.static(path.join(__dirname, '../app/tpl')))
     .use(express.static(path.join(__dirname, '../app'), STATIC_OPTIONS));
 
 var server = http.createServer(api);

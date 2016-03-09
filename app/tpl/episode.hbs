@@ -15,15 +15,6 @@
     <p>No hay descripcion disponible.</p>
     {{/unless}}
   </div>
-  <fieldset class="langselect">
-    <legend>Subtitle Languages</legend>
-    <select name="lang" id="lang">
-      <option value="">Select language</option>
-      {{#langs}}
-        <option value="{{code}}">{{name}}</option>
-      {{/langs}}
-    </select>
-  </fieldset>
   <br>
   <div class="torrentlist">
     <div class="panel panel-default">
@@ -56,30 +47,6 @@
         {{#unless torrents}}
           <li class="list-group-item">No links :c</li>
         {{/unless}}
-      </ul>
-    </div>
-    <div class="panel panel-default">
-      <header class="list-toggle panel-heading"
-              onclick="$(this).parent().find('ul, .panel-body').toggle()">
-        <p>Subtitles</p>
-      </header>
-      <div class="panel-body" hidden>
-        <p>
-          <span id="howmanysubs">{{subs.length}} </span>
-          <strong> Links</strong>
-        </p>
-      </div>
-      <ul id="subs" class="list-group" hidden>
-        {{#subs}}
-        <li class="list-group-item">
-          <p>{{name}}</p>
-          <p>
-            <strong>Format: </strong>{{ext}}
-            <strong>Language: </strong>{{lang}}
-          </p>
-          <pre>{{url}}</pre>
-        </li>
-        {{/subs}}
       </ul>
     </div>
   </div>

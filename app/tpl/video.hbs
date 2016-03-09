@@ -1,15 +1,48 @@
 <div class="card col-md-8 col-md-offset-2">
-    <h3 class="text-center"> Palomitas Player </h3>
+  <h3 class="text-center"> Palomitas Player </h3>
+  <p>
+    Para comprobar el estado de los torrents, pulsa <a href="/status.html">aquí</a>.
+  </p>
+  <p>
+    Para ver videos en formatos .avi o .mkv que no funcionan en HTML5 usa un reproductor externo como
+    <a href="https://mpv.io">MPV</a> o <a href="https://videolan.org">VLC</a>
+    para tu ordenador o <a href="https://www.reddit.com/r/PopcornTimeCE/">Popcorn Time</a> para tu movil. Este servidor solo almacena los videos temporalmente, asi que para mantener el video disponible esta pagina debe estar abierta.
+  </p>
+  <div id="media" class="text-center">
+    <video src="{{url}}" id="video" controls autoplay></video>
+    <pre>{{url}}</pre>
+  </div>
+  <section class="langselect">
+    <legend>Subtitle Languages</legend>
+    <select name="lang" id="lang">
+      <option value="">Select language</option>
+      {{#langs}}
+      <option value="{{code}}">{{name}}</option>
+      {{/langs}}
+    </select>
+  </section>
+  <div class="panel panel-default">
+    <header class="list-toggle panel-heading"
+    onclick="$(this).parent().find('ul, .panel-body').toggle()">
+    <p>Subtitles</p>
+  </header>
+  <div class="panel-body" hidden>
     <p>
-        Para comprobar el estado de los torrents, pulsa <a href="/status.html">aquí</a>.
+      <span id="howmanysubs">{{subs.length}} </span>
+      <strong> Links</strong>
     </p>
-    <p>
-        Para ver videos en formatos .avi o .mkv que no funcionan en HTML5 usa un reproductor externo como
-        <a href="https://mpv.io">MPV</a> o <a href="https://videolan.org">VLC</a>
-        para tu ordenador o <a href="https://www.reddit.com/r/PopcornTimeCE/">Popcorn Time</a> para tu movil. Este servidor solo almacena los videos temporalmente, asi que para mantener el video disponible esta pagina debe estar abierta.
-    </p>
-    <div id="media" class="text-center">
-        <video src="{{url}}" id="video" controls autoplay></video>
-        <pre>{{url}}</pre>
-    </div>
+  </div>
+  <ul id="subs" class="list-group" hidden>
+    {{#subs}}
+    <li class="list-group-item">
+      <p>{{name}}</p>
+      <p>
+        <strong>Format: </strong>{{ext}}
+        <strong>Language: </strong>{{lang}}
+      </p>
+      <pre>{{url}}</pre>
+    </li>
+    {{/subs}}
+  </ul>
+</div>
 </div>

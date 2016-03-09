@@ -55,7 +55,7 @@ pre{
 .searchlist li{
   background-color: #999;
   color: white;
-  font- weight: bold;
+  font-weight: bold;
   font-size: larger;
   margin: 4px;
 }
@@ -83,7 +83,7 @@ pre{
     margin-bottom: 1em;
 }
 /* more margin for episode cards */
-.card .episode{
+.card.episode{
     margin-top: 3em !important;
 }
 

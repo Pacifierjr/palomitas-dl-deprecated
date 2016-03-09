@@ -229,7 +229,7 @@ api.post('/play', function(req, res, next){
 
 api.get('/subs/langs', function(req, res){
   res.sendFile(path.join(__dirname, 'langs.json'));
-})
+});
 
 // parsing subtitles on the server
 // because using zlib node module is easier
