@@ -188,6 +188,7 @@ $(document).ready(function(){
                     subs_container.fadeIn();
                 });
             }
+            bindInsertButtons();
         });
         bindInsertButtons();
     }
