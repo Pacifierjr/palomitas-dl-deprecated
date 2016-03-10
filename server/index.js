@@ -250,7 +250,13 @@ api.get('/subs/:url', function(req, res){
         var id   = text.shift();
         var time = text.shift().replace(",", ".");
         var time = time.split(' --> ');
-        var res = {id: id, time: {start: time[0], end: time[1]}, text: text.join('\r\n')};
+        text = text.join('\r\n');
+        text.replace(/á/g, "a");
+        text.replace(/é/g, "e");
+        text.replace(/í/g, "i");
+        text.replace(/ó/g, "o");
+        text.replace(/ú/g, "u");
+        var res  = {id: id, time: {start: time[0], end: time[1]}, text: text};
         if(!(res.id && res.time.start && res.time.end && res.text )){
           throw new SyntaxError("subid: "+id+" Malformed subtitles archive from opensubtitles.")
         }

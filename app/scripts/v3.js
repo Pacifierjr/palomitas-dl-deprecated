@@ -199,6 +199,8 @@ $(document).ready(function(){
         if(!btns.length) console.log("No buttons for binding");
         btns.each(function(index, el){
             btn = $(el);
+            btn.removeClass('btn-success');
+            btn.addClass('btn-info');
             var url = btn.data('url');
             el.onclick = function onClickInsert(e){
                 console.log("Parsing subs from "+peerflix+"/subs/"+encode(url));
@@ -244,7 +246,7 @@ $(document).ready(function(){
         }
     });
     $(document).ajaxError(function(ev, xhr, ajaxSettings, err){
-        error('Error sending request to the API: '+xhr.responseText);
+        error('Error sending request to the API: ', xhr.responseText);
     });
     socket.on('interested', function(result){
         if(!interested){
@@ -320,8 +322,8 @@ $(document).ready(function(){
             parse(view_cache[viewName], callback);
         }
     }
-    function error(msg){
-        render('error', {error: msg});
+    function error(msg, reason){
+        render('error', {error: msg, msg: reason || msg});
         console.error(msg);
     }
     function showLoading(){
