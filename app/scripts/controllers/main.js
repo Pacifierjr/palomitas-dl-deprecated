@@ -71,6 +71,8 @@ angular.module('peerflixServerApp')
     };
 
     $scope.remove = function (torrent) {
+      var confirmed = confirm("¿De verdad quieres borrar este torrent?");
+      if(!confirmed) return;
       Torrent.remove({ infoHash: torrent.infoHash });
       _.remove($scope.torrents, torrent);
     };
