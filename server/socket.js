@@ -7,10 +7,20 @@ module.exports = function (server) {
     _ = require('lodash'),
     progress = require('./progressbar'),
     store = require('./store');
+  var users = [];
 
   io.set('log level', 2);
 
   io.sockets.on('connection', function (socket) {
+    users.push(socket.id);
+    console.log("Connected WS client "+socket.id);
+    socket.on('disconnect', function(data){
+      var index = users.indexOf(socket.id);
+      users.splice(index, 1);
+      console.log("Disconnected WS client "+socket.id);
+    }.bind(this));
+    
+    
     socket.on('pause', function (infoHash) {
       console.log('pausing ' + infoHash);
       var torrent = store.get(infoHash);
