@@ -2,11 +2,13 @@
   <ul class="nav nav-pills pull-right">
     <li class="active"><a href="">Torrents</a></li>
     <li>
-      <a href="https://github.com/asapach/peerflix-server" target="_blank">
-        <i class="fa fa-github"></i> About</a>
+      <a href="https://github.com/juandjara/palomitas-player" target="_blank">
+        <i class="fa fa-github"></i> Acerca de</a>
     </li>
   </ul>
-  <h3 class="text-muted text-nowrap"><img src="images/logo.svg" alt="logo" height="40"> peerflix server</h3>
+  <h3 class="text-muted text-nowrap"><img src="images/logo.svg" alt="logo" height="40">
+    Palomitas Player
+  </h3>
 </div>
 
 <div class="jumbotron" ng-file-drop ng-file-change="upload($files)">
@@ -14,24 +16,24 @@
   <div class="form-group">
     <div class="input-group">
       <span class="input-group-addon">torrent:</span>
-      <input type="text" class="form-control" placeholder="Torrent or magnet link" ng-model="link" ng-keypress="keypress($event)">
+      <input type="text" class="form-control" placeholder="Torrent o magnet link" ng-model="link" ng-keypress="keypress($event)">
     </div>
   </div>
   <a class="btn btn-success" href="" ng-click="download()">
     <span class="fa fa-cloud-download"></span>
-    Download
+    Descargar
   </a>
   <p class="text-right">
     <i class="fa fa-upload"></i>
-    Drop .torrent files here or
+    Suelta archivos .torrent aqu&iacute; o
     <span class="btn-link" ng-file-select ng-file-change="upload($files)">
-      browse to upload
+      examina tu equipo
     </span>
   </p>
 </div>
 
 <div ng-if="!torrents.length" class="alert alert-info" role="alert">
-  <i class="fa fa-film"></i> Go get some torrents to watch!
+  <i class="fa fa-film"></i> Ve a por algunos torrents para ver!
 </div>
 
 <div class="row content">
@@ -43,7 +45,7 @@
         'fa-refresh fa-spin': !torrent.ready,
         'fa-exchange': torrent.interested }">
       </span>
-      {{ torrent.name || 'Fetching metadata...' }}
+      {{ torrent.name || 'Obteniendo metadatos...' }}
     </div>
     <div class="panel-body">
       <div class="progress progress-striped" ng-class="{ active: torrent.interested }">
@@ -68,12 +70,12 @@
           </button>
         </li>
         <li class="text-nowrap" ng-show="torrent.stats">
-          <strong>Speed:</strong>
+          <strong>Velocidad:</strong>
           <span class="label label-success">{{ torrent.stats.speed.down / 1024 | number:1 }}</span> /
           <span class="label label-danger">{{ torrent.stats.speed.up / 1024 | number:1 }}</span> KB/s
         </li>
         <li class="text-nowrap" ng-show="torrent.stats">
-          <strong>Traffic:</strong>
+          <strong>Tr&aacute;fico:</strong>
           <span class="label label-success">{{ torrent.stats.traffic.down / 1024 / 1024 | number:1 }}</span> /
           <span class="label label-danger">{{ torrent.stats.traffic.up / 1024 / 1024 | number:1 }}</span> MB
         </li>
@@ -83,7 +85,7 @@
           <span class="label label-default">{{ torrent.stats.peers.total | number }}</span>
         </li>
         <li class="text-nowrap" ng-show="torrent.stats">
-          <strong>Queue:</strong>
+          <strong>Cola:</strong>
           <span class="label label-primary">{{ torrent.stats.queue | number }}</span>
         </li>
       </ul>
