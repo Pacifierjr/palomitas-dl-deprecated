@@ -6,8 +6,8 @@
         <i class="fa fa-github"></i> Acerca de</a>
     </li>
   </ul>
-  <h3 class="text-muted text-nowrap"><img src="images/logo.svg" alt="logo" height="40">
-    Palomitas Player
+  <h3 class="text-nowrap"><img src="images/logo.svg" alt="logo" height="40">
+    <span style="color: white">Palomitas Player</span>
   </h3>
 </div>
 
@@ -37,7 +37,7 @@
 </div>
 
 <div class="row content">
-  <div ng-repeat="torrent in torrents" class="panel panel-default" ng-class="{ 'panel-warning': !torrent.ready, 'panel-success': torrent.interested }">
+  <div ng-repeat="torrent in torrents" class="panel panel-primary" ng-class="{ 'panel-warning': !torrent.ready, 'panel-success': torrent.interested }">
     <div class="panel-heading">
       <button type="button" class="close" ng-click="remove(torrent)">&times;</button>
       <span class="fa" ng-class="{
