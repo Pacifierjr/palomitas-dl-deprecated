@@ -21,6 +21,6 @@ RUN npm install && \
     grunt build
 
 VOLUME [ "/tmp/torrent-stream" ]
-EXPOSE 80 9000
+EXPOSE 6881 9000
 
 CMD [ "npm", "start" ]
