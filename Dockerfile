@@ -21,6 +21,9 @@ RUN npm install && \
     grunt build
 
 VOLUME [ "/tmp/torrent-stream" ]
+
+# run as root in order to expose port 80
+USER root
 EXPOSE 6881 9000
 
 CMD [ "npm", "start" ]
