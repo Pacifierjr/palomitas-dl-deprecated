@@ -53,6 +53,9 @@
              ng-repeat="progress in torrent.progress track by $index" ng-style="{ width: progress + '%' }"></div>
       </div>
       <ul class="list-group">
+        <li class="list-group-item" ng-show="torrent.ready">
+          <a ng-href="torrents/{{torrent.infoHash}}/files/">HLS Playlist</a>
+        </li>
         <li class="list-group-item" ng-repeat="file in torrent.files">
           <input type="checkbox" ng-model="file.selected" ng-click="select(torrent, file)"/>
           <span class="fa fa-cloud-download"></span>
