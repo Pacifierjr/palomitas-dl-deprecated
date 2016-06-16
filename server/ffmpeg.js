@@ -4,9 +4,12 @@ var path = require('path'),
   fs = require('fs'),
   pump = require('pump');
 
-module.exports = function (req, res, torrent, file) {
+var activeTranscoders = {};
+
+module.exports = function (req, res, torrent, file, hlsMode) {
   var param = req.query.ffmpeg,
     ffmpeg = require('fluent-ffmpeg');
+
 
   function probe() {
     var filePath = path.join(torrent.path, file.path);
@@ -44,12 +47,80 @@ module.exports = function (req, res, torrent, file) {
     pump(command, res);
   }
 
+  function hls(){
+    res.type("application/x-mpegURL");
+    /*
+    var args = [
+			'-i', file.path, '-sn',
+			'-async', '1', '-acodec', 'libmp3lame', '-b:a',  '128k', '-ar', '44100', '-ac', '2',
+			'-b:v', '1000k', '-vcodec', 'libx264', '-profile:v', 'baseline', '-preset:v' ,'superfast',
+			'-x264opts', 'level=3.0',
+			'-threads', '0', '-flags', '-global_header', '-map', '0',
+			'-f', 'segment',
+			'-segment_list', playlistFileName, '-segment_format', 'mpegts', tsOutputFormat
+		];
+    */
+    var lastSlashIndex = file.path.lastIndexOf("/");
+    var torrentPath = "/tmp/torrent-stream/"+req.params.infoHash+"/";
+    var fileFullPath = torrentPath+file.path.substring(0, lastSlashIndex)+"/";
+    var inputPath = fileFullPath+file.name;
+    if(activeTranscoders[inputPath]){
+      console.log("ATTACH TO ENCODING OF FILE "+inputPath);
+      return res.sendfile(torrentPath+'stream.m3u8');
+    }
+    var command = ffmpeg(inputPath)
+      .inputOptions('-async 1')
+      .audioCodec('libmp3lame')
+      .audioBitrate('128k')
+      .audioFrequency('44100')
+      .audioChannels(2)
+      .videoBitrate('1000k')
+      .videoCodec('libx264')
+      .outputOptions([
+        '-profile:v baseline',
+        '-preset:v superfast',
+        '-crf 25',
+        '-x264opts level=3.0',
+        '-threads 0',
+        '-flags -global_header',
+        '-map 0'
+      ])
+      .format('segment')
+      .outputOptions([
+        '-segment_list '+torrentPath+'stream.m3u8',
+        '-segment_format mpegts'
+      ])
+      .on('start', function (cmd) {
+        activeTranscoders[inputPath] = command;
+        console.log("STARTING ENCODING FOR FILE "+inputPath);        
+        console.log(cmd);
+        res.sendfile(torrentPath+'stream.m3u8');
+      })
+      .on('error', function (err) {
+        if(activeTranscoders[inputPath]) delete activeTranscoders[inputPath];
+        console.error(err);
+        res.status(500).send("FFMPEG Error");
+      })
+      .on('end', function(){
+        console.log("FINISHED ENCODING FOR FILE "+inputPath);
+        if(activeTranscoders[inputPath]) delete activeTranscoders[inputPath];
+      })
+      .save(torrentPath+'stream%05d.ts');
+    
+    /*var stream = fs.createReadStream(torrentPath+"stream.m3u8");
+    stream.on('error', function (err) {
+        console.error(err);
+      });
+    pump(stream, res);
+    */
+  }
+
   switch (param) {
     case 'probe':
       return probe();
     case 'remux':
       return remux();
     default:
-      res.send(501, 'Not supported.');
+      hlsMode? hls() : res.send(501, 'Not supported.');
   }
 };
