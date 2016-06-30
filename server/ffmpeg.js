@@ -70,7 +70,7 @@ module.exports = function (req, res, torrent, file, hlsMode) {
     }
     var command = ffmpeg(inputPath)
       .inputOptions('-async 1')
-      .audioCodec('libmp3lame')
+      .audioCodec('aac')
       .audioBitrate('128k')
       .audioFrequency('44100')
       .audioChannels(2)
