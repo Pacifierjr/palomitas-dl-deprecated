@@ -64,7 +64,7 @@ module.exports = function (req, res, torrent, file, hlsMode) {
     var torrentPath = "/tmp/torrent-stream/"+req.params.infoHash+"/";
     var fileFullPath = torrentPath+file.path.substring(0, lastSlashIndex)+"/";
     var inputPath = fileFullPath+file.name;
-    if(activeTranscoders[inputPath]){
+    if(activeTranscoders[inputPath] || fs.existsSync(torrentPath+'stream.m3u8')){
       console.log("ATTACH TO ENCODING OF FILE "+inputPath);
       return res.sendfile(torrentPath+'stream.m3u8');
     }
