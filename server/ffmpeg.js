@@ -83,7 +83,6 @@ module.exports = function (req, res, torrent, file, hlsMode) {
         '-x264opts level=3.0',
         '-threads 0',
         '-flags -global_header',
-        '-map 0'
       ])
       .format('segment')
       .outputOptions([
