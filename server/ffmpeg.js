@@ -1,15 +1,14 @@
 'use strict';
 
-var path = require('path'),
-  fs = require('fs'),
-  pump = require('pump');
+var path = require('path');
+var fs   = require('fs');
+var pump = require('pump');
+var ffmpeg = require('fluent-ffmpeg');
 
 var activeTranscoders = {};
 
-module.exports = function (req, res, torrent, file, hlsMode) {
-  var param = req.query.ffmpeg,
-    ffmpeg = require('fluent-ffmpeg');
-
+module.exports = function (req, res, torrent, file, hls) {
+  var param = req.query.ffmpeg;
 
   function probe() {
     var filePath = path.join(torrent.path, file.path);
@@ -47,8 +46,7 @@ module.exports = function (req, res, torrent, file, hlsMode) {
     pump(command, res);
   }
 
-  function hls(){
-    res.type("application/x-mpegURL");
+  function hlsConvert(){
     /*
     var args = [
 			'-i', file.path, '-sn',
@@ -60,13 +58,18 @@ module.exports = function (req, res, torrent, file, hlsMode) {
 			'-segment_list', playlistFileName, '-segment_format', 'mpegts', tsOutputFormat
 		];
     */
-    var lastSlashIndex = file.path.lastIndexOf("/");
-    var torrentPath = "/tmp/torrent-stream/"+req.params.infoHash+"/";
-    var fileFullPath = torrentPath+file.path.substring(0, lastSlashIndex)+"/";
-    var inputPath = fileFullPath+file.name;
-    if(activeTranscoders[inputPath] || fs.existsSync(torrentPath+'stream.m3u8')){
-      console.log("ATTACH TO ENCODING OF FILE "+inputPath);
-      return res.sendfile(torrentPath+'stream.m3u8');
+    
+    var listPath    = path.join(torrent.path, 'stream.m3u8');
+    var segmentPath = path.join(torrent.path, 'stream%05d.ts');
+    var inputPath   = path.join(torrent.path, file.path);
+    
+    if(activeTranscoders[inputPath] || fs.existsSync(listPath)){
+      console.log("HLS: Requested encoding is being procesed for file: \n"+inputPath);
+      res.status(200).json({
+        list: "/torrents/"+torrent.infoHash+"/stream.m3u8",
+        segments: "/torrents/"+torrent.infoHash+"/stream00001.ts"
+      });
+      return;
     }
     var command = ffmpeg(inputPath)
       .inputOptions('-async 1')
@@ -86,32 +89,31 @@ module.exports = function (req, res, torrent, file, hlsMode) {
       ])
       .format('segment')
       .outputOptions([
-        '-segment_list '+torrentPath+'stream.m3u8',
+        '-segment_list '+listPath,
         '-segment_format mpegts'
       ])
       .on('start', function (cmd) {
         activeTranscoders[inputPath] = command;
-        console.log("STARTING ENCODING FOR FILE "+inputPath);        
+        console.log("HLS: Starting encoding for file: \n"+inputPath);
+        console.log("HLS: ffmpeg command: \n");        
         console.log(cmd);
-        res.sendfile(torrentPath+'stream.m3u8');
+
+        res.status(202).json({
+          list: "/torrents/"+torrent.infoHash+"/stream.m3u8",
+          segments: "/torrents/"+torrent.infoHash+"/stream00001.ts",
+          command: cmd
+        });
       })
       .on('error', function (err) {
-        if(activeTranscoders[inputPath]) delete activeTranscoders[inputPath];
+        delete activeTranscoders[inputPath];
         console.error(err);
-        res.status(500).send("FFMPEG Error");
+        res.status(418).send("FFMPEG Error");
       })
       .on('end', function(){
-        console.log("FINISHED ENCODING FOR FILE "+inputPath);
-        if(activeTranscoders[inputPath]) delete activeTranscoders[inputPath];
+        console.log("HLS: Finished encoding for file: \n"+inputPath);
+        delete activeTranscoders[inputPath];
       })
-      .save(torrentPath+'stream%05d.ts');
-    
-    /*var stream = fs.createReadStream(torrentPath+"stream.m3u8");
-    stream.on('error', function (err) {
-        console.error(err);
-      });
-    pump(stream, res);
-    */
+      .save(segmentPath);
   }
 
   switch (param) {
@@ -120,6 +122,6 @@ module.exports = function (req, res, torrent, file, hlsMode) {
     case 'remux':
       return remux();
     default:
-      hlsMode? hls() : res.send(501, 'Not supported.');
+      hls? hlsConvert() : res.send(501, 'Not supported.');
   }
 };
