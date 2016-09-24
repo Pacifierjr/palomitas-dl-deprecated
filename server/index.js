@@ -167,7 +167,7 @@ api.get('/torrents/:infoHash/stream.m3u8', findTorrent, function(req, res){
   return res.sendfile(filePath);
 });
 
-api.all('/torrents/:infoHash/files/:path([^"]+)/:segment', function(req, res){
+api.all('/torrents/:infoHash/:segment', function(req, res){
   if(req.params.segment.indexOf(".ts") === -1){
     console.log("hls segment url called for a file that is not a hls segment");
     return;
