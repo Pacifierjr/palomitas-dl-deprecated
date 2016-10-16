@@ -11,15 +11,11 @@ var multipart   = require('connect-multiparty');
 var store       = require('./store');
 var progress    = require('./progressbar');
 var stats       = require('./stats');
+var cors        = require('cors');
 
 api.use(express.json());
 api.use(express.logger('dev'));
-api.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'OPTIONS, POST, GET, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+api.use(cors());
 
 function serialize(torrent) {
   if (!torrent.torrent) {
@@ -156,12 +152,12 @@ api.get('/torrents/:infoHash/files.json', findTorrent, function (req, res) {
 api.all('/torrents/:infoHash/files/:path([^"]+)/hlsConvert', findTorrent, function(req, res){
   var convertToHLS = true;
   var torrent = req.torrent;
-  var file    = _.find(torrent.files, { path: req.params.path });  
-  return require('./ffmpeg')(req, res, torrent, file, convertToHLS);  
+  var file    = _.find(torrent.files, { path: req.params.path });
+  return require('./ffmpeg')(req, res, torrent, file, convertToHLS);
 });
 api.get('/torrents/:infoHash/stream.m3u8', findTorrent, function(req, res){
   var torrent  = req.torrent;
-  var file     = _.find(torrent.files, { path: req.params.path });  
+  var file     = _.find(torrent.files, { path: req.params.path });
   var filePath = path.join(torrent.path, 'stream.m3u8');
   res.type("application/x-mpegURL");
   return res.sendfile(filePath);
@@ -172,9 +168,9 @@ api.all('/torrents/:infoHash/:segment', function(req, res){
     console.log("hls segment url called for a file that is not a hls segment");
     return;
   }
-  var path = require("path");  
+  var path = require("path");
   var filePath = "/tmp/torrent-stream/"+req.params.infoHash+"/"+req.params.segment;
-  res.type("video/mp2t");    
+  res.type("video/mp2t");
   return res.sendfile(filePath);
 })
 
@@ -184,7 +180,7 @@ api.all('/torrents/:infoHash/files/:path([^"]+)', findTorrent, function (req, re
 
   if(req.params.path.indexOf(".ts") !== -1){
     var filePath = "/tmp/torrent-stream/"+req.params.infoHash+"/"+req.params.path;
-    res.type("video/mp2t");    
+    res.type("video/mp2t");
     return res.sendfile(filePath);
   }
 
