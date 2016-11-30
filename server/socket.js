@@ -9,8 +9,6 @@ module.exports = function (server) {
     store = require('./store');
   var users = [];
 
-  io.set('log level', 2);
-
   io.sockets.on('connection', function (socket) {
     users.push(socket.id);
     console.log("Connected WS client "+socket.id);
