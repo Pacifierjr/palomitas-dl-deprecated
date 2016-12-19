@@ -20,7 +20,7 @@ function save() {
       throw err;
     }
     var state = Object.keys(torrents).map(function (infoHash) {
-      return infoHash;
+      return {infoHash: infoHash, addDate: torrents[infoHash].addDate};
     });
     fs.writeFile(storageFile, JSON.stringify(state), function (err) {
       if (err) {
@@ -46,6 +46,7 @@ var store = _.extend(new events.EventEmitter(), {
 
       try {
         var e = engine(torrent, options);
+	e.addDate = Date.now();
         store.emit('torrent', infoHash, e);
         torrents[infoHash] = e;
         save();
@@ -72,9 +73,11 @@ var store = _.extend(new events.EventEmitter(), {
       return torrents[infoHash];
     });
   },
-  load: function (infoHash) {
+  load: function (torrentData) {
+		var infoHash = torrentData.infoHash;
     console.log('loading ' + infoHash);
     var e = engine({ infoHash: infoHash });
+		e.addDate = torrentData.addDate;
     store.emit('torrent', infoHash, e);
     torrents[infoHash] = e;
   }
@@ -104,8 +107,8 @@ mkdirp(configPath, function (err) {
       } else {
         var torrents = JSON.parse(data);
         console.log('resuming from previous state');
-        torrents.forEach(function (infoHash) {
-          store.load(infoHash);
+        torrents.forEach(function (torrentData) {
+          store.load(torrentData);
         });
       }
     });
