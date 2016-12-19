@@ -28,6 +28,7 @@ function serialize(torrent) {
     name: torrent.torrent.name,
     interested: torrent.amInterested,
     ready: torrent.ready,
+    addDate: torrent.addDate,
     files: torrent.files.map(function (f) {
       // jshint -W016
       var start = f.offset / pieceLength | 0;
