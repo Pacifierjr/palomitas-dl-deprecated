@@ -42,6 +42,15 @@ angular.module('peerflixServerApp')
       });
     }
 
+    $scope.formatDate = function(ms) {
+      var date = new Date(ms);
+      return date.toLocaleDateString();
+    }
+    $scope.formatTime = function(ms) {
+      var date = new Date(ms);
+      return date.toLocaleTimeString();
+    }
+    
     $scope.keypress = function (e) {
       if (e.which === 13) {
         $scope.download();
