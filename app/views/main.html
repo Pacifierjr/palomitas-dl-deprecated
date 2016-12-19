@@ -59,7 +59,7 @@
         <div ng-class-even="'space'" ng-class-odd="'progress-bar progress-bar-success'"
              ng-repeat="progress in torrent.progress track by $index" ng-style="{ width: progress + '%' }"></div>
       </div>
-      <p>Añadido el {{formatDate(torrent.addDate)}} a las {{formatTime(torrent.addDate)}}</p>
+      <p ng-show="torrent.addDate">Añadido el {{formatDate(torrent.addDate)}} a las {{formatTime(torrent.addDate)}}</p>
       <ul class="list-group">
         <li class="list-group-item" ng-repeat="file in torrent.files">
           <input type="checkbox" ng-model="file.selected" ng-click="select(torrent, file)"/>
