@@ -68,6 +68,14 @@ api.post('/torrents', function (req, res) {
       res.send(500, err);
     } else {
       res.send({ infoHash: infoHash });
+      var time = 1000 * 60 * 60 * 24;
+      setTimeout(function deleteAfterOneDay() {
+        store.delete(infoHash, function(err) {
+          if (err) {
+            console.error("Error al borrar el torrent con hash "+infoHash, err)
+          }
+        })
+      }, time)
     }
   });
 });
