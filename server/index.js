@@ -57,6 +57,12 @@ function findTorrent(req, res, next) {
   next();
 }
 
+api.get('/uptime', function(req, res) {
+  var uptime = process.uptime()
+  var started = new Date(Date.now() - (uptime * 1000))
+  res.json({ uptime: uptime, started: started })
+})
+
 api.get('/torrents', function (req, res) {
   res.send(store.list().map(serialize));
 });
