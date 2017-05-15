@@ -73,8 +73,7 @@ api.post('/torrents', function (req, res) {
       console.error(err);
       res.send(500, err);
     } else {
-      //var time = 1000 * 60 * 60 * 24;
-      var time = 1000 * 60; // one minute
+      var time = 1000 * 60 * 60 * 24;
       setTimeout(function deleteAfterOneDay() {
         store.remove(infoHash);
       }, time)
