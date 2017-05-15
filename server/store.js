@@ -46,7 +46,7 @@ var store = _.extend(new events.EventEmitter(), {
 
       try {
         var e = engine(torrent, options);
-	e.addDate = Date.now();
+        e.addDate = Date.now();
         store.emit('torrent', infoHash, e);
         torrents[infoHash] = e;
         save();
