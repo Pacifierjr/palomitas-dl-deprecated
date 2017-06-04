@@ -38,10 +38,10 @@ module.exports = function (req, res, torrent, file, hls) {
         '-error-resilient 1'
       ])
       .on('start', function (cmd) {
-        console.log(cmd);
+        console.log("[ffmpeg.js] ", cmd);
       })
       .on('error', function (err) {
-        console.error(err);
+        console.error("[ffmpeg.js] ", err);
       });
     pump(command, res);
   }
@@ -58,11 +58,11 @@ module.exports = function (req, res, torrent, file, hls) {
 			'-segment_list', playlistFileName, '-segment_format', 'mpegts', tsOutputFormat
 		];
     */
-    
+
     var listPath    = path.join(torrent.path, 'stream.m3u8');
     var segmentPath = path.join(torrent.path, 'stream%05d.ts');
     var inputPath   = path.join(torrent.path, file.path);
-    
+
     if(activeTranscoders[inputPath] || fs.existsSync(listPath)){
       console.log("HLS: Requested encoding is being procesed for file: \n"+inputPath);
       res.status(200).json({
@@ -95,8 +95,8 @@ module.exports = function (req, res, torrent, file, hls) {
       .on('start', function (cmd) {
         activeTranscoders[inputPath] = command;
         console.log("HLS: Starting encoding for file: \n"+inputPath);
-        console.log("HLS: ffmpeg command: \n");        
-        console.log(cmd);
+        console.log("HLS: ffmpeg command: \n");
+        console.log("[ffmpeg.js] ", cmd);
 
         res.status(202).json({
           list: "/torrents/"+torrent.infoHash+"/stream.m3u8",
@@ -106,7 +106,7 @@ module.exports = function (req, res, torrent, file, hls) {
       })
       .on('error', function (err) {
         delete activeTranscoders[inputPath];
-        console.error(err);
+        console.error("[ffmpeg.js] ", err);
         res.status(418).send("FFMPEG Error");
       })
       .on('end', function(){
@@ -116,11 +116,34 @@ module.exports = function (req, res, torrent, file, hls) {
       .save(segmentPath);
   }
 
+  function subsExtract() {
+    res.type('text/vtt')
+    var command = ffmpeg(file.createReadStream())
+      .noVideo()
+      .noAudio()
+      .format('webvtt')
+      .outputOptions([
+        //'-threads 2',
+        '-deadline realtime',
+        '-error-resilient 1'
+      ])
+      .on('start', function (cmd) {
+        console.log("[ffmpeg.js] ", cmd);
+      })
+      .on('error', function (err) {
+        console.error("[ffmpeg.js] ", err);
+      });
+      pump(command, res);
+  }
+
+
   switch (param) {
     case 'probe':
       return probe();
     case 'remux':
       return remux();
+    case 'subs':
+      return subsExtract();
     default:
       hls? hlsConvert() : res.send(501, 'Not supported.');
   }
