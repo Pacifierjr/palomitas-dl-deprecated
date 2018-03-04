@@ -12,10 +12,12 @@ var store       = require('./store');
 var progress    = require('./progressbar');
 var stats       = require('./stats');
 var cors        = require('cors');
+var sendSeekable = require('send-seekable');
 
 api.use(express.json());
 api.use(express.logger('dev'));
 api.use(cors());
+api.use(sendSeekable());
 
 function serialize(torrent) {
   if (!torrent.torrent) {

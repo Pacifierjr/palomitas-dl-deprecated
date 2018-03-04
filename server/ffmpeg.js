@@ -43,7 +43,7 @@ module.exports = function (req, res, torrent, file, hls) {
       .on('error', function (err) {
         console.error("[ffmpeg.js] ", err);
       });
-    pump(command, res);
+    res.sendSeekable(command);
   }
 
   function hlsConvert(){
