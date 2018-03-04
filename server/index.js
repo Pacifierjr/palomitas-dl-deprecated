@@ -13,11 +13,13 @@ var progress    = require('./progressbar');
 var stats       = require('./stats');
 var cors        = require('cors');
 var sendSeekable = require('send-seekable');
+var bobdyParser = require('body-parser')
+var logger = require('morgan');
 
-api.use(express.json());
-api.use(express.logger('dev'));
+api.use(bobdyParser.json());
+api.use(logger('dev'));
 api.use(cors());
-api.use(sendSeekable());
+api.use(sendSeekable);
 
 function serialize(torrent) {
   if (!torrent.torrent) {
