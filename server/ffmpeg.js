@@ -27,6 +27,21 @@ module.exports = function (req, res, torrent, file, hls) {
   }
 
   function remux() {
+    webmPath = path.join(torrent.path, file.path) + '.webm';
+    if(fs.existsSync(webmPath)) {
+      fs.stat(webmPath, (err, stats) => {
+        if (err) throw err;
+        const stream = fs.createReadStream(webmPath);
+        res.sendSeekable(stream, {
+          length: stats.size,
+          type: 'video/webm'
+        })
+      })
+      return;
+    }
+
+    const writeStream = fs.createWriteStream(webmPath);
+
     res.type('video/webm');
     var command = ffmpeg(file.createReadStream())
       .videoCodec('libvpx').audioCodec('libvorbis').format('webm')
@@ -43,7 +58,18 @@ module.exports = function (req, res, torrent, file, hls) {
       .on('error', function (err) {
         console.error("[ffmpeg.js] ", err);
       });
-    res.sendSeekable(command, {length: file.length});
+
+    command.pipe(writeStream);
+
+    fs.stat(webmPath, (err, stats) => {
+      if (err) throw err;
+      const stream = fs.createReadStream(webmPath);
+      res.sendSeekable(stream, {
+        length: stats.size,
+        type: 'video/webm'
+      })
+    })
+    
   }
 
   function hlsConvert(){
