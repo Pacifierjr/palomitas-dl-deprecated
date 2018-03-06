@@ -29,13 +29,10 @@ module.exports = function (req, res, torrent, file, hls) {
   function remux() {
     const mp4Path = path.join(torrent.path, file.path) + '.mp4';
     if(fs.existsSync(mp4Path)) {
-      fs.stat(mp4Path, (err, stats) => {
-        if (err) throw err;
-        const stream = fs.createReadStream(mp4Path);
-        res.sendSeekable(stream, {
-          length: stats.size,
-          type: 'video/mp4'
-        })
+      const stream = fs.createReadStream(mp4Path);
+      res.sendSeekable(stream, {
+        length: file.length,
+        type: 'video/mp4'
       })
       return;
     }
@@ -44,35 +41,33 @@ module.exports = function (req, res, torrent, file, hls) {
 
     res.type('video/mp4');
     var command = ffmpeg(file.createReadStream())
-      .videoCodec('copy')
-      .audioCodec('copy')
+      //.videoCodec('copy')
+      //.audioCodec('copy')
+      //.audioBitrate(128)
+      //.videoBitrate(1024)
       .format('mp4')
-      .audioBitrate(128)
-      .videoBitrate(1024)
       .outputOptions([
         //'-threads 2',
-        '-deadline realtime',
-        '-error-resilient 1',
-        '-movflags +faststart'
+        //'-deadline realtime',
+        //'-error-resilient 1',
+        '-movflags frag_keyframe+faststart'
       ])
       .on('start', function (cmd) {
         console.log("[ffmpeg.js] ", cmd);
       })
-      .on('error', function (err) {
-        console.error("[ffmpeg.js] ", err);
+      .on('error', function (err, stdout, stderr) {
+        console.error('[ffmpeg.js] Error: ' + err.message);
+        console.error('> ffmpeg output:\n' + stdout);
+        console.error('> ffmpeg stderr:\n' + stderr);
       });
 
     command.pipe(writeStream);
 
-    fs.stat(mp4Path, (err, stats) => {
-      if (err) throw err;
-      const stream = fs.createReadStream(mp4Path);
-      res.sendSeekable(stream, {
-        length: stats.size,
-        type: 'video/mp4'
-      })
-    })
-    
+    const stream = fs.createReadStream(mp4Path);
+    res.sendSeekable(stream, {
+      length: file.length,
+      type: 'video/mp4'
+    });    
   }
 
   function hlsConvert(){
