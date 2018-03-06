@@ -4,6 +4,7 @@ var path = require('path');
 var fs   = require('fs');
 var pump = require('pump');
 var ffmpeg = require('fluent-ffmpeg');
+var rangeParser = require('range-parser');
 
 var activeTranscoders = {};
 
@@ -29,11 +30,43 @@ module.exports = function (req, res, torrent, file, hls) {
   function remux() {
     const mp4Path = path.join(torrent.path, file.path) + '.mp4';
     if(fs.existsSync(mp4Path)) {
+      /*
       const stream = fs.createReadStream(mp4Path);
       res.sendSeekable(stream, {
         length: file.length,
         type: 'video/mp4'
       })
+      */
+      var range = req.headers.range;
+      range = range && rangeParser(file.length, range)[0];
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.type('video/mp4');
+      req.connection.setTimeout(3600000);
+
+      if (!range) {
+        res.setHeader('Content-Length', file.length);
+        if (req.method === 'HEAD') {
+          return res.end();
+        }
+        return res.sendSeekable(
+          fs.createReadStream(mp4Path),
+          {
+            length: file.length,
+            type: 'video/mp4'
+          }
+        )
+        //return pump(fs.createReadStream(mp4Path), res);
+      }
+
+      res.statusCode = 206;
+      res.setHeader('Content-Length', range.end - range.start + 1);
+      res.setHeader('Content-Range', 'bytes ' + range.start + '-' + range.end + '/' + file.length);
+
+      if (req.method === 'HEAD') {
+        return res.end();
+      }
+
+      pump(fs.createReadStream(mp4Path, range), res);
       return;
     }
 
@@ -63,11 +96,13 @@ module.exports = function (req, res, torrent, file, hls) {
 
     command.pipe(writeStream);
 
-    const stream = fs.createReadStream(mp4Path);
-    res.sendSeekable(stream, {
-      length: file.length,
-      type: 'video/mp4'
-    });    
+    return res.sendSeekable(
+      fs.createReadStream(mp4Path),
+      {
+        length: file.length,
+        type: 'video/mp4'
+      }
+    )
   }
 
   function hlsConvert(){
