@@ -27,30 +27,33 @@ module.exports = function (req, res, torrent, file, hls) {
   }
 
   function remux() {
-    webmPath = path.join(torrent.path, file.path) + '.webm';
-    if(fs.existsSync(webmPath)) {
-      fs.stat(webmPath, (err, stats) => {
+    const mp4Path = path.join(torrent.path, file.path) + '.mp4';
+    if(fs.existsSync(mp4Path)) {
+      fs.stat(mp4Path, (err, stats) => {
         if (err) throw err;
-        const stream = fs.createReadStream(webmPath);
+        const stream = fs.createReadStream(mp4Path);
         res.sendSeekable(stream, {
           length: stats.size,
-          type: 'video/webm'
+          type: 'video/mp4'
         })
       })
       return;
     }
 
-    const writeStream = fs.createWriteStream(webmPath);
+    const writeStream = fs.createWriteStream(mp4Path);
 
-    res.type('video/webm');
+    res.type('video/mp4');
     var command = ffmpeg(file.createReadStream())
-      .videoCodec('libvpx').audioCodec('libvorbis').format('webm')
+      .videoCodec('copy')
+      .audioCodec('copy')
+      .format('mp4')
       .audioBitrate(128)
       .videoBitrate(1024)
       .outputOptions([
         //'-threads 2',
         '-deadline realtime',
-        '-error-resilient 1'
+        '-error-resilient 1',
+        '-movflags +faststart'
       ])
       .on('start', function (cmd) {
         console.log("[ffmpeg.js] ", cmd);
@@ -61,12 +64,12 @@ module.exports = function (req, res, torrent, file, hls) {
 
     command.pipe(writeStream);
 
-    fs.stat(webmPath, (err, stats) => {
+    fs.stat(mp4Path, (err, stats) => {
       if (err) throw err;
-      const stream = fs.createReadStream(webmPath);
+      const stream = fs.createReadStream(mp4Path);
       res.sendSeekable(stream, {
         length: stats.size,
-        type: 'video/webm'
+        type: 'video/mp4'
       })
     })
     
