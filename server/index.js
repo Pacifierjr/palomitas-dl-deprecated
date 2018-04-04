@@ -15,6 +15,7 @@ var cors        = require('cors');
 var sendSeekable = require('send-seekable');
 var bobdyParser = require('body-parser')
 var logger = require('morgan');
+var diskusage = require('diskusage');
 
 api.use(bobdyParser.json());
 api.use(logger('dev'));
@@ -72,6 +73,11 @@ api.get('/torrents', function (req, res) {
 });
 
 api.post('/torrents', function (req, res) {
+  const diskSpace = diskusage.checkSync('/');
+  const oneGB = 1024 * 1024 * 1024;
+  if(diskSpace.free < oneGB) {
+    res.status(400).json({error: true, code: 'diskfull', message: 'Server disk is almost full. Please delete some data before posting a new torrent'});
+  }
   store.add(req.body.link, function (err, infoHash) {
     if (err) {
       console.error(err);
