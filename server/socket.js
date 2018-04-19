@@ -77,6 +77,7 @@ module.exports = function (server) {
 
   store.on('torrent', function (infoHash, torrent) {
     function listen() {
+      sendNotificationToTelegram(torrent);
       var notifyProgress = _.throttle(function () {
         io.sockets.emit('download', infoHash, progress(torrent.bitfield.buffer));
       }, 1000, { trailing: false });
@@ -106,8 +107,6 @@ module.exports = function (server) {
 
       torrent.on('interested', function () {
         io.sockets.emit('interested', infoHash);
-        var torrent = store.get(infoHash);
-        sendNotificationToTelegram(torrent);
         notifySelection();
       });
 
