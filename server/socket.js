@@ -4,12 +4,9 @@ var stats = require('./stats');
 var https = require('https');
 require('dotenv').config();
 
-// sendNotificationToTelegram({test: "test"})
-// .then(res => res.toString())
-// .then(res => console.log(res), err => console.error(err))
-
 function sendNotificationToTelegram(torrent) {
-  const msg = JSON.stringify(torrent, null, 2);
+  const filename = torrent.torrent && torrent.torrent.name;
+  const msg = `New torrent added: \n${filename}`;
   const path = `/bot${encodeURIComponent(process.env.BOT_TOKEN)}/sendMessage?chat_id=${process.env.TG_CHANNEL}&text=${encodeURIComponent(msg)}`;
   return new Promise((resolve, reject) => {
     const request = https.request({
