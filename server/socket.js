@@ -1,6 +1,33 @@
 'use strict';
 
 var stats = require('./stats');
+var https = require('https');
+require('dotenv').config();
+
+// sendNotificationToTelegram({test: "test"})
+// .then(res => res.toString())
+// .then(res => console.log(res), err => console.error(err))
+
+function sendNotificationToTelegram(torrent) {
+  const msg = JSON.stringify(torrent, null, 2);
+  const path = `/bot${encodeURIComponent(process.env.BOT_TOKEN)}/sendMessage?chat_id=${process.env.TG_CHANNEL}&text=${encodeURIComponent(msg)}`;
+  return new Promise((resolve, reject) => {
+    const request = https.request({
+      hostname: 'api.telegram.org',
+      port: 443,
+      path: (path),
+      method: 'GET'
+    }, res => {
+      res.on('data', data => {
+        resolve(data);
+      })
+    })
+    request.on('error', err => {
+      reject(err);
+    })
+    request.end();
+  })
+}
 
 module.exports = function (server) {
   var io = require('socket.io').listen(server),
@@ -82,6 +109,8 @@ module.exports = function (server) {
 
       torrent.on('interested', function () {
         io.sockets.emit('interested', infoHash);
+        var torrent = store.get(infoHash);
+        sendNotificationToTelegram(torrent);
         notifySelection();
       });
 

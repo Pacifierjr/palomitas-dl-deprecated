@@ -13,8 +13,6 @@ var fs = require('fs'),
   storageFile = path.join(configPath, 'torrents.json'),
   torrents = {},
   options = {};
-var https = require('https');
-require('dotenv').config();
 
 function save() {
   mkdirp(configPath, function (err) {
@@ -33,28 +31,6 @@ function save() {
   });
 }
 
-// sendNotificationToTelegram({test: "test"}).then(res => res.toString()).then(res => console.log(res), err => console.error(err))
-
-function sendNotificationToTelegram(torrent) {
-  const msg = JSON.stringify(torrent, null, 2);
-  const path = `/bot${encodeURIComponent(process.env.BOT_TOKEN)}/sendMessage?chat_id=${process.env.TG_CHANNEL}&text=${encodeURIComponent(msg)}`;
-  return new Promise((resolve, reject) => {
-    const request = https.request({
-      hostname: 'api.telegram.org',
-      port: 443,
-      path: (path),
-      method: 'GET'
-    }, res => {
-      res.on('data', data => {
-        resolve(data);
-      })
-    })
-    request.on('error', err => {
-      reject(err);
-    })
-    request.end();
-  })
-}
 
 var store = _.extend(new events.EventEmitter(), {
   add: function (link, callback) {
@@ -76,7 +52,6 @@ var store = _.extend(new events.EventEmitter(), {
         torrents[infoHash] = e;
         save();
         callback(null, infoHash);
-        sendNotificationToTelegram(e);
       } catch (e) {
         callback(e);
       }
@@ -87,6 +62,9 @@ var store = _.extend(new events.EventEmitter(), {
   },
   remove: function (infoHash) {
     var torrent = torrents[infoHash];
+    if(!torrent) {
+      return;
+    }
     torrent.destroy();
     torrent.remove(function () {
       torrent.emit('destroyed');
