@@ -76,7 +76,12 @@ api.post('/torrents', function (req, res) {
   const diskSpace = diskusage.checkSync('/');
   const oneGB = 1024 * 1024 * 1024;
   if(diskSpace.free < oneGB) {
-    res.status(400).json({error: true, code: 'diskfull', message: 'Server disk is almost full. Please delete some data before posting a new torrent'});
+    res.status(400).json({
+      error: true,
+      code: 'diskfull',
+      message: 'Server disk is almost full. Please delete some data before posting a new torrent'
+    });
+    return;
   }
   store.add(req.body.link, function (err, infoHash) {
     if (err) {
